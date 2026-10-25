@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "c4b83af6b04ad506e185",
   "position": {
     "x": 16,
@@ -28,6 +28,7 @@
               },
               "queryRef": "pnl_layout.line_label",
               "nativeQueryRef": "line_label",
+              "active": true,
               "displayName": "P&L line"
             }
           ]

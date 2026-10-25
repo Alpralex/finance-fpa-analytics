@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "50263ca5cee5f2e2018d",
   "position": {
     "x": 16,
@@ -13,25 +13,6 @@
     "visualType": "pivotTable",
     "query": {
       "queryState": {
-        "Rows": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_cost_centre"
-                    }
-                  },
-                  "Property": "cost_centre_name"
-                }
-              },
-              "queryRef": "dim_cost_centre.cost_centre_name",
-              "nativeQueryRef": "cost_centre_name",
-              "displayName": "Cost centre"
-            }
-          ]
-        },
         "Columns": {
           "projections": [
             {
@@ -47,7 +28,28 @@
               },
               "queryRef": "dim_account.pnl_group",
               "nativeQueryRef": "pnl_group",
+              "active": true,
               "displayName": "Cost group"
+            }
+          ]
+        },
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_cost_centre"
+                    }
+                  },
+                  "Property": "cost_centre_name"
+                }
+              },
+              "queryRef": "dim_cost_centre.cost_centre_name",
+              "nativeQueryRef": "cost_centre_name",
+              "active": true,
+              "displayName": "Cost centre"
             }
           ]
         },

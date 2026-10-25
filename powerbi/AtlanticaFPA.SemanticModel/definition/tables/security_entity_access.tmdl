@@ -1,16 +1,19 @@
 /// Row-level security mapping: which user (UPN) may see which entity. No relationship; read by the Entity controller role.
 table security_entity_access
 	isHidden
+	lineageTag: 403b2b81-826a-44f7-9448-4d4688e93f19
 
 	column user_email
 		dataType: string
 		isHidden
+		lineageTag: e80275c1-cbdf-4c00-8aa9-414e29a1c6a5
 		summarizeBy: none
 		sourceColumn: user_email
 
 	column entity_id
 		dataType: string
 		isHidden
+		lineageTag: 1ee8b2eb-ee7a-40c7-9f1b-2b76ead383ed
 		summarizeBy: none
 		sourceColumn: entity_id
 
@@ -21,3 +24,4 @@ table security_entity_access
 					Source = Parquet.Document ( File.Contents ( DataFolder & "security_entity_access.parquet" ) )
 				in
 					Source
+

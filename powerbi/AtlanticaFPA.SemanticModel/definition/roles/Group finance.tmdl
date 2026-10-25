@@ -1,3 +1,6 @@
 /// Group finance sees every entity: no table filter.
 role 'Group finance'
 	modelPermission: read
+
+	annotation PBI_Id = 63655921ed8540e6b770f275ecf474ff
+

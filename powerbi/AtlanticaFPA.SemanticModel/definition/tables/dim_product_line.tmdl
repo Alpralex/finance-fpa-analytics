@@ -1,13 +1,16 @@
 table dim_product_line
+	lineageTag: 35370d38-52c0-435b-af32-abc794c6499b
 
 	column product_line_id
 		dataType: string
 		isKey
+		lineageTag: 7accadc8-beb5-4f56-9925-0bcccd6ae6da
 		summarizeBy: none
 		sourceColumn: product_line_id
 
 	column product_line_name
 		dataType: string
+		lineageTag: 94d8977c-32d7-414b-a757-265648dc264e
 		summarizeBy: none
 		sourceColumn: product_line_name
 
@@ -18,3 +21,4 @@ table dim_product_line
 					Source = Parquet.Document ( File.Contents ( DataFolder & "dim_product_line.parquet" ) )
 				in
 					Source
+

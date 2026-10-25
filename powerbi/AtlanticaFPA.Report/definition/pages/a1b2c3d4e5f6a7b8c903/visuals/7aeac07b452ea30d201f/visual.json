@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "7aeac07b452ea30d201f",
   "position": {
     "x": 16,
@@ -13,25 +13,6 @@
     "visualType": "pivotTable",
     "query": {
       "queryState": {
-        "Rows": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_product_line"
-                    }
-                  },
-                  "Property": "product_line_name"
-                }
-              },
-              "queryRef": "dim_product_line.product_line_name",
-              "nativeQueryRef": "product_line_name",
-              "displayName": "Product line"
-            }
-          ]
-        },
         "Columns": {
           "projections": [
             {
@@ -47,7 +28,28 @@
               },
               "queryRef": "dim_entity.entity_name",
               "nativeQueryRef": "entity_name",
+              "active": true,
               "displayName": "Entity"
+            }
+          ]
+        },
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_product_line"
+                    }
+                  },
+                  "Property": "product_line_name"
+                }
+              },
+              "queryRef": "dim_product_line.product_line_name",
+              "nativeQueryRef": "product_line_name",
+              "active": true,
+              "displayName": "Product line"
             }
           ]
         },

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "e40c2016861fc7ca37d9",
   "position": {
     "x": 648,
@@ -28,6 +28,7 @@
               },
               "queryRef": "dim_product_line.product_line_name",
               "nativeQueryRef": "product_line_name",
+              "active": true,
               "displayName": "Product line"
             }
           ]
@@ -47,6 +48,7 @@
               },
               "queryRef": "_Measures.Units Var vs Budget %",
               "nativeQueryRef": "Units Var vs Budget %",
+              "active": true,
               "displayName": "Units vs budget %"
             }
           ]

@@ -3,9 +3,9 @@
   "name": "12a09c1b64ea3d439387",
   "position": {
     "x": 264,
-    "y": 432,
+    "y": 456,
     "z": 5000,
-    "height": 272,
+    "height": 248,
     "width": 1000,
     "tabOrder": 5000
   },
@@ -221,7 +221,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Ledger exceptions to clear before close'"
+                  "Value": "'Ledger exceptions to clear before close (filtered by the year slicer)'"
                 }
               }
             }
@@ -281,14 +281,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "text": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Filtered by the year slicer: the FR01 bonus spike is in December 2025'"
+                  "Value": "false"
                 }
               }
             }

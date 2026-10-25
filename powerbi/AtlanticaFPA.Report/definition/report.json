@@ -11,7 +11,7 @@
       "type": "SharedResources"
     },
     "customTheme": {
-      "name": "AtlanticaFPA-3b0ffa1a.json",
+      "name": "AtlanticaFPA-c89749fd.json",
       "reportVersionAtImport": {
         "visual": "2.11.0",
         "report": "3.4.0",
@@ -37,8 +37,8 @@
       "type": "RegisteredResources",
       "items": [
         {
-          "name": "AtlanticaFPA-3b0ffa1a.json",
-          "path": "AtlanticaFPA-3b0ffa1a.json",
+          "name": "AtlanticaFPA-c89749fd.json",
+          "path": "AtlanticaFPA-c89749fd.json",
           "type": "CustomTheme"
         }
       ]

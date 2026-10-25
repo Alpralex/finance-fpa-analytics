@@ -502,7 +502,7 @@ function checksPage() {
   const p = PAGE_IDS.checks;
   z = 0;
   const varYtd = meas("Var vs Budget YTD");
-  const ccMatrix = container(p, "matrix_cost_centres", { x: 16, y: 112, w: 752, h: 304 }, {
+  const ccMatrix = container(p, "matrix_cost_centres", { x: 16, y: 112, w: 752, h: 328 }, {
     visualType: "pivotTable",
     query: {
       queryState: {
@@ -524,7 +524,7 @@ function checksPage() {
       "€ thousands, year to date. Green: below budget (favourable). Red: above budget"),
   }, { filterConfig: { filters: [inFilter(p, "opex_only", F.pnlSubtotal, ["'EBITDA'"])] } });
 
-  const freight = lineChart(p, "line_freight", { x: 784, y: 112, w: 480, h: 304 }, F.month, [
+  const freight = lineChart(p, "line_freight", { x: 784, y: 112, w: 480, h: 328 }, F.month, [
     { field: meas("Actual"), name: "Actual", color: C.blue },
     { field: meas("Budget"), name: "Budget", color: C.grey, dashed: true },
   ], "Portugal outbound freight, actual against budget",
@@ -537,13 +537,13 @@ function checksPage() {
     ],
   });
 
-  const dup = card(p, "card_duplicates", { x: 16, y: 432, w: 232, h: 128 }, meas("Duplicate Invoices"), "Duplicate invoices", {
+  const dup = card(p, "card_duplicates", { x: 16, y: 456, w: 232, h: 120 }, meas("Duplicate Invoices"), "Duplicate invoices", {
     alt: "Number of invoices posted more than once.",
   });
-  const exceptions = card(p, "card_exceptions", { x: 16, y: 576, w: 232, h: 128 }, meas("Journal Exceptions"), "Journal exceptions", {
+  const exceptions = card(p, "card_exceptions", { x: 16, y: 592, w: 232, h: 112 }, meas("Journal Exceptions"), "Journal exceptions", {
     alt: "Number of ledger exceptions to clear: duplicate invoices and cost spikes.",
   });
-  const table = container(p, "table_journal_checks", { x: 264, y: 432, w: 1000, h: 272 }, {
+  const table = container(p, "table_journal_checks", { x: 264, y: 456, w: 1000, h: 248 }, {
     visualType: "tableEx",
     query: {
       queryState: {
@@ -567,9 +567,9 @@ function checksPage() {
       columnHeaders: [{ properties: { columnAdjustment: str("growToFit"), autoSizeColumnWidth: bool(true) } }],
       total: [{ properties: { totals: bool(false) } }],
     },
-    visualContainerObjects: chartVcos("Ledger exceptions to clear before close",
+    visualContainerObjects: chartVcos("Ledger exceptions to clear before close (filtered by the year slicer)",
       "Table of ledger exceptions: duplicate invoices and cost spikes, with entity, account, month, vendor, document, number of postings, amount in local currency and change against last year.",
-      "Filtered by the year slicer: the FR01 bonus spike is in December 2025"),
+      null),
   });
   return {
     name: p, displayName: "Cost centres and checks",

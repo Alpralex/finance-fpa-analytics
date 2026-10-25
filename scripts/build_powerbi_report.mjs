@@ -203,6 +203,7 @@ function card(page, key, pos, field, label, opts = {}) {
     padding: [{ properties: { paddingUniform: num(8) }, selector: { id: "default" } }],
     layout: [{ properties: { paddingUniform: num(0) }, selector: { id: "default" } }],
     outline: [{ properties: { show: bool(false) }, selector: { id: "default" } }],
+    divider: [{ properties: { show: bool(false) }, selector: { id: "default" } }],
   };
   if (opts.reference) {
     const refId = id(page, key, "ref");
@@ -216,6 +217,7 @@ function card(page, key, pos, field, label, opts = {}) {
     ];
     const valueProps = { show: bool(true), valueFontColor: opts.reference.signColor ? signFont(opts.reference.field) : fill(C.text), valueBold: bool(true) };
     if (opts.reference.units) valueProps.valueDisplayUnits = str(opts.reference.units);
+    if (opts.reference.precision !== undefined) valueProps.valuePrecision = int(opts.reference.precision);
     objects.referenceLabelValue = [{ properties: valueProps, selector: partSel }];
   }
   return container(page, key, pos, {
@@ -286,23 +288,23 @@ function pnlPage() {
   const p = PAGE_IDS.pnl;
   z = 0;
   const cards = [
-    card(p, "card_net_revenue", { x: 16, y: 112, w: 300, h: 96 }, meas("Net Revenue YTD"), "Net revenue YTD", {
+    card(p, "card_net_revenue", { x: 16, y: 112, w: 300, h: 128 }, meas("Net Revenue YTD"), "Net revenue YTD", {
       units: "1000000", precision: 2,
       reference: { field: meas("Net Revenue Var vs Budget YTD %"), title: "vs budget", signColor: true },
       alt: "Net revenue year to date, with the variance against budget in percent.",
     }),
-    card(p, "card_gross_margin", { x: 332, y: 112, w: 300, h: 96 }, meas("Gross Margin % YTD"), "Gross margin % YTD", {
+    card(p, "card_gross_margin", { x: 332, y: 112, w: 300, h: 128 }, meas("Gross Margin % YTD"), "Gross margin % YTD", {
       reference: { field: meas("Gross Margin % Budget YTD"), title: "budget" },
       alt: "Gross margin percent year to date, with the budgeted gross margin percent.",
     }),
-    card(p, "card_ebitda", { x: 648, y: 112, w: 300, h: 96 }, meas("EBITDA YTD"), "EBITDA YTD", {
+    card(p, "card_ebitda", { x: 648, y: 112, w: 300, h: 128 }, meas("EBITDA YTD"), "EBITDA YTD", {
       units: "1000000", precision: 2,
-      reference: { field: meas("EBITDA Budget YTD"), title: "budget", units: "1000000" },
+      reference: { field: meas("EBITDA Budget YTD"), title: "budget", units: "1000000", precision: 2 },
       alt: "EBITDA year to date, with budgeted EBITDA year to date.",
     }),
-    card(p, "card_fy_ebitda", { x: 964, y: 112, w: 300, h: 96 }, meas("Full Year Forecast EBITDA"), "Full-year EBITDA forecast (9+3)", {
+    card(p, "card_fy_ebitda", { x: 964, y: 112, w: 300, h: 128 }, meas("Full Year Forecast EBITDA"), "Full-year EBITDA forecast (9+3)", {
       units: "1000000", precision: 2,
-      reference: { field: meas("Full Year Budget EBITDA"), title: "full-year budget", units: "1000000" },
+      reference: { field: meas("Full Year Budget EBITDA"), title: "full-year budget", units: "1000000", precision: 2 },
       alt: "Full-year EBITDA forecast, actual January to September plus the October reforecast, with the full-year budget.",
     }),
   ];
@@ -319,7 +321,7 @@ function pnlPage() {
       }],
     },
   };
-  const matrix = container(p, "matrix_pnl", { x: 16, y: 224, w: 1248, h: 480 }, {
+  const matrix = container(p, "matrix_pnl", { x: 16, y: 256, w: 1248, h: 448 }, {
     visualType: "pivotTable",
     query: {
       queryState: {
@@ -371,7 +373,7 @@ function bridgePage() {
     },
     objects: {
       sentimentColors: [{ properties: { increaseFill: fill(C.green), decreaseFill: fill(C.red), totalFill: fill(C.grey) } }],
-      labels: [{ properties: { show: bool(true), fontSize: num(10), color: fill(C.text), labelDisplayUnits: str("1000"), labelPrecision: int(0) } }],
+      labels: [{ properties: { show: bool(true), fontSize: num(10), color: fill(C.text), labelDisplayUnits: num(1000), labelPrecision: int(0) } }],
       categoryAxis: [{ properties: { ...axisOn } }],
       valueAxis: [{ properties: { ...axisOn, gridlineShow: bool(true), gridlineColor: fill(C.grid), labelDisplayUnits: str("1000000") } }],
       legend: [{ properties: { show: bool(false) } }],
@@ -392,7 +394,7 @@ function bridgePage() {
     },
     objects: {
       dataPoint: [{ properties: { fill: { solid: { color: signCases(amount, C.green, C.red) } } }, selector: { data: [{ dataViewWildcard: { matchingOption: 1 } }] } }],
-      labels: [{ properties: { show: bool(true), fontSize: num(10), color: fill(C.text), labelDisplayUnits: str("1000"), labelPrecision: int(0) } }],
+      labels: [{ properties: { show: bool(true), fontSize: num(10), color: fill(C.text), labelDisplayUnits: num(1000), labelPrecision: int(0) } }],
       categoryAxis: [{ properties: { ...axisOn } }],
       valueAxis: [{ properties: { show: bool(false), gridlineShow: bool(false), showAxisTitle: bool(false) } }],
       legend: [{ properties: { show: bool(false) } }],
@@ -429,7 +431,7 @@ function pvmPage() {
     ["Volume Effect", "Volume", C.blue], ["Mix Effect", "Mix", C.grey], ["Price Effect", "Price", C.green],
     ["Unit Cost Effect", "Unit cost", C.orange], ["Margin FX Effect", "FX", C.amber],
   ];
-  const stacked = container(p, "bar_pvm_entity", { x: 16, y: 112, w: 616, h: 320 }, {
+  const stacked = container(p, "bar_pvm_entity", { x: 16, y: 112, w: 616, h: 280 }, {
     visualType: "barChart",
     query: {
       queryState: {
@@ -448,7 +450,7 @@ function pvmPage() {
       "Stacked bar chart splitting each entity's product margin variance against budget into volume, mix, price, unit cost and FX effects.",
       "€ thousands, January to September 2026. Right of zero is favourable"),
   });
-  const scatter = container(p, "scatter_volume_price", { x: 648, y: 112, w: 616, h: 320 }, {
+  const scatter = container(p, "scatter_volume_price", { x: 648, y: 112, w: 616, h: 280 }, {
     visualType: "scatterChart",
     query: {
       queryState: {
@@ -468,7 +470,7 @@ function pvmPage() {
       "Scatter plot with one point per product line: units against budget in percent on the horizontal axis and price effect in euros on the vertical axis.",
       "Units vs budget, closed months · price effect in € thousands"),
   }, { filterConfig: { filters: [inFilter(p, "scatter_closed", F.closed, ["true"])] } });
-  const matrix = container(p, "matrix_pvm", { x: 16, y: 448, w: 1248, h: 256 }, {
+  const matrix = container(p, "matrix_pvm", { x: 16, y: 408, w: 1248, h: 296 }, {
     visualType: "pivotTable",
     query: {
       queryState: {
@@ -500,7 +502,7 @@ function checksPage() {
   const p = PAGE_IDS.checks;
   z = 0;
   const varYtd = meas("Var vs Budget YTD");
-  const ccMatrix = container(p, "matrix_cost_centres", { x: 16, y: 112, w: 752, h: 328 }, {
+  const ccMatrix = container(p, "matrix_cost_centres", { x: 16, y: 112, w: 752, h: 304 }, {
     visualType: "pivotTable",
     query: {
       queryState: {
@@ -522,7 +524,7 @@ function checksPage() {
       "€ thousands, year to date. Green: below budget (favourable). Red: above budget"),
   }, { filterConfig: { filters: [inFilter(p, "opex_only", F.pnlSubtotal, ["'EBITDA'"])] } });
 
-  const freight = lineChart(p, "line_freight", { x: 784, y: 112, w: 480, h: 328 }, F.month, [
+  const freight = lineChart(p, "line_freight", { x: 784, y: 112, w: 480, h: 304 }, F.month, [
     { field: meas("Actual"), name: "Actual", color: C.blue },
     { field: meas("Budget"), name: "Budget", color: C.grey, dashed: true },
   ], "Portugal outbound freight, actual against budget",
@@ -535,13 +537,13 @@ function checksPage() {
     ],
   });
 
-  const dup = card(p, "card_duplicates", { x: 16, y: 456, w: 232, h: 120 }, meas("Duplicate Invoices"), "Duplicate invoices", {
+  const dup = card(p, "card_duplicates", { x: 16, y: 432, w: 232, h: 128 }, meas("Duplicate Invoices"), "Duplicate invoices", {
     alt: "Number of invoices posted more than once.",
   });
-  const exceptions = card(p, "card_exceptions", { x: 16, y: 592, w: 232, h: 112 }, meas("Journal Exceptions"), "Journal exceptions", {
+  const exceptions = card(p, "card_exceptions", { x: 16, y: 576, w: 232, h: 128 }, meas("Journal Exceptions"), "Journal exceptions", {
     alt: "Number of ledger exceptions to clear: duplicate invoices and cost spikes.",
   });
-  const table = container(p, "table_journal_checks", { x: 264, y: 456, w: 1000, h: 248 }, {
+  const table = container(p, "table_journal_checks", { x: 264, y: 432, w: 1000, h: 272 }, {
     visualType: "tableEx",
     query: {
       queryState: {

@@ -3,9 +3,9 @@
   "name": "89f261762f6deda80fff",
   "position": {
     "x": 16,
-    "y": 456,
+    "y": 432,
     "z": 3000,
-    "height": 120,
+    "height": 128,
     "width": 232,
     "tabOrder": 3000
   },
@@ -124,6 +124,22 @@
         }
       ],
       "outline": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        }
+      ],
+      "divider": [
         {
           "properties": {
             "show": {

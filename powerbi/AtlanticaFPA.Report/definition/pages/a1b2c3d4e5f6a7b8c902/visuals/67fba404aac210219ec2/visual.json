@@ -142,7 +142,7 @@
             "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "'1000'"
+                  "Value": "1000D"
                 }
               }
             },

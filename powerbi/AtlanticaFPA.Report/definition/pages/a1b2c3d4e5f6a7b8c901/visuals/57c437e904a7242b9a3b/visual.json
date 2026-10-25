@@ -5,7 +5,7 @@
     "x": 648,
     "y": 112,
     "z": 3000,
-    "height": 96,
+    "height": 128,
     "width": 300,
     "tabOrder": 3000
   },
@@ -138,6 +138,22 @@
         }
       ],
       "outline": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        }
+      ],
+      "divider": [
         {
           "properties": {
             "show": {
@@ -303,6 +319,13 @@
               "expr": {
                 "Literal": {
                   "Value": "'1000000'"
+                }
+              }
+            },
+            "valuePrecision": {
+              "expr": {
+                "Literal": {
+                  "Value": "2L"
                 }
               }
             }

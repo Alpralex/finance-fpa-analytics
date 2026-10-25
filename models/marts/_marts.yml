@@ -1,0 +1,69 @@
+version: 2
+
+models:
+  - name: dim_entity
+    columns:
+      - name: entity_id
+        tests: [unique, not_null]
+  - name: dim_account
+    description: P&L accounts with the management hierarchy.
+    columns:
+      - name: account_id
+        tests: [unique, not_null]
+  - name: dim_cost_centre
+    columns:
+      - name: cost_centre_id
+        tests: [unique, not_null]
+  - name: dim_product_line
+    columns:
+      - name: product_line_id
+        tests: [unique, not_null]
+  - name: dim_month
+    columns:
+      - name: month_start
+        tests: [unique, not_null]
+  - name: fct_actuals
+    description: Closed-month actuals, reporting sign (revenue +, cost -), in local currency, EUR at actual rate and EUR at budget rate.
+    tests:
+      - unique_combination: {columns: [entity_id, cost_centre_id, account_id, product_line_id, month_start]}
+    columns:
+      - name: account_id
+        tests:
+          - relationships: {to: ref('dim_account'), field: account_id}
+      - name: month_start
+        tests:
+          - relationships: {to: ref('dim_month'), field: month_start}
+      - name: amount_eur
+        tests: [not_null]
+  - name: fct_plan
+    description: Budgets and reforecast, reporting sign.
+    columns:
+      - name: account_id
+        tests:
+          - relationships: {to: ref('dim_account'), field: account_id}
+      - name: amount_eur
+        tests: [not_null]
+  - name: fct_sales_volume
+    columns:
+      - name: revenue_eur
+        tests: [not_null]
+  - name: mart_pnl_monthly
+    description: Actual, budget, 9+3 forecast and prior year by entity x account x month, EUR.
+    tests:
+      - unique_combination: {columns: [entity_id, account_id, month_start]}
+  - name: mart_margin_pvm
+    description: Product gross-margin bridge YTD, budget to actual, into volume, mix, price, unit cost and FX.
+    tests:
+      - unique_combination: {columns: [entity_id, product_line_id]}
+  - name: mart_ebitda_bridge
+    description: EBITDA bridge YTD, budget to actual, per entity.
+    tests:
+      - unique_combination: {columns: [entity_id, step_order]}
+  - name: mart_journal_checks
+    description: Duplicate invoices and month-level spikes for review before close.
+    columns:
+      - name: check_type
+        tests:
+          - accepted_values: {values: ['duplicate_invoice', 'spike']}
+  - name: mart_fy_landing
+    description: Current-year landing, budget vs 9+3 forecast vs prior year, by entity and P&L group.

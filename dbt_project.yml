@@ -1,0 +1,28 @@
+name: finance_fpa
+version: "1.0.0"
+config-version: 2
+profile: finance_fpa
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+vars:
+  raw_path: "{{ env_var('FPA_RAW_PATH', 'data/raw') }}"
+  # last closed month; the October reforecast replaces budget from the month after
+  last_closed_month: "2026-09-01"
+  current_fy: 2026
+
+seeds:
+  finance_fpa:
+    accounts:
+      +column_types:
+        account_id: varchar
+        pnl_line_order: integer
+
+models:
+  finance_fpa:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

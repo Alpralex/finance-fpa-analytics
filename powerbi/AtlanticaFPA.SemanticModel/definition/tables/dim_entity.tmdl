@@ -1,0 +1,43 @@
+table dim_entity
+
+	column entity_id
+		dataType: string
+		isKey
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	column entity_name
+		dataType: string
+		summarizeBy: none
+		sortByColumn: sort_order
+		sourceColumn: entity_name
+
+	column country
+		dataType: string
+		summarizeBy: none
+		sourceColumn: country
+
+	column currency
+		dataType: string
+		summarizeBy: none
+		sourceColumn: currency
+
+	column region
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region
+
+	column sort_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: sort_order
+
+	partition dim_entity = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "dim_entity.parquet" ) )
+				in
+					Source

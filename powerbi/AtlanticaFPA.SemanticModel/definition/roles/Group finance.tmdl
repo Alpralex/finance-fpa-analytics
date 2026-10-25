@@ -1,0 +1,3 @@
+/// Group finance sees every entity: no table filter.
+role 'Group finance'
+	modelPermission: read

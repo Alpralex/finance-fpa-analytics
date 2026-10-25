@@ -1,0 +1,64 @@
+/// Disconnected P&L layout: one row per matrix line. Group rows filter dim_account[pnl_group]; subtotal rows sum every account up to max_line_order (Gross margin 29, EBITDA 49, EBIT 99).
+table pnl_layout
+
+	column line_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: line_order
+
+	column line_label
+		dataType: string
+		summarizeBy: none
+		sortByColumn: line_order
+		sourceColumn: line_label
+
+	column line_type
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: line_type
+
+	column pnl_group
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: pnl_group
+
+	column max_line_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: max_line_order
+
+	column is_subtotal
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: is_subtotal
+
+	partition pnl_layout = m
+		mode: import
+		source =
+				let
+					Source = #table (
+						type table [line_order = Int64.Type, line_label = text, line_type = text, pnl_group = text, max_line_order = Int64.Type, is_subtotal = Int64.Type],
+						{
+							{1, "Net revenue", "Group", "Net revenue", null, 0},
+							{2, "Cost of sales", "Group", "Cost of sales", null, 0},
+							{3, "Gross margin", "Subtotal", null, 29, 1},
+							{4, "People", "Group", "People", null, 0},
+							{5, "Facilities", "Group", "Facilities", null, 0},
+							{6, "IT", "Group", "IT", null, 0},
+							{7, "Commercial", "Group", "Commercial", null, 0},
+							{8, "General and admin", "Group", "General and admin", null, 0},
+							{9, "EBITDA", "Subtotal", null, 49, 1},
+							{10, "D&A", "Group", "D&A", null, 0},
+							{11, "EBIT", "Subtotal", null, 99, 1}
+						}
+					)
+				in
+					Source

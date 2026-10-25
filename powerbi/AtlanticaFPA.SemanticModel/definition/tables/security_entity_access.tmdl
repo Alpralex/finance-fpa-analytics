@@ -1,0 +1,23 @@
+/// Row-level security mapping: which user (UPN) may see which entity. No relationship; read by the Entity controller role.
+table security_entity_access
+	isHidden
+
+	column user_email
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: user_email
+
+	column entity_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	partition security_entity_access = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "security_entity_access.parquet" ) )
+				in
+					Source

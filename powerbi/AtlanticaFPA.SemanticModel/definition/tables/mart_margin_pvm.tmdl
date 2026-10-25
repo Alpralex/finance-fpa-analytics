@@ -1,0 +1,105 @@
+table mart_margin_pvm
+
+	column entity_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	column product_line_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: product_line_id
+
+	column act_units
+		dataType: double
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: act_units
+
+	column bud_units
+		dataType: double
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: bud_units
+
+	column budget_sales_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: budget_sales_eur
+
+	column actual_sales_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: actual_sales_eur
+
+	column budget_margin_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: budget_margin_eur
+
+	column actual_margin_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: actual_margin_eur
+
+	column sales_volume_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: sales_volume_eur
+
+	column sales_price_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: sales_price_eur
+
+	column sales_fx_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: sales_fx_eur
+
+	column volume_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: volume_eur
+
+	column mix_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: mix_eur
+
+	column price_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: price_eur
+
+	column cost_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: cost_eur
+
+	column fx_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: fx_eur
+
+	partition mart_margin_pvm = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "mart_margin_pvm.parquet" ) )
+				in
+					Source

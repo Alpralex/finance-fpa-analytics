@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_gl_journal_lines
+    description: General ledger journal lines, local currency, debit positive.
+    tests:
+      - balanced_journals: {journal_column: journal_id, amount_column: amount_lc}
+      - unique_combination: {columns: [journal_id, line_number]}
+    columns:
+      - name: entity_id
+        tests:
+          - relationships: {to: ref('entities'), field: entity_id}
+      - name: account_id
+        tests:
+          - not_null
+          - relationships: {to: ref('accounts'), field: account_id}
+      - name: cost_centre_id
+        tests:
+          - relationships: {to: ref('cost_centres'), field: cost_centre_id}
+      - name: posting_date
+        tests: [not_null]
+  - name: stg_plan_lines
+    tests:
+      - unique_combination: {columns: [scenario, entity_id, cost_centre_id, account_id, product_line_id, month_start]}
+    columns:
+      - name: scenario
+        tests:
+          - accepted_values: {values: ['BUD2025', 'BUD2026', 'FC2026_9+3']}
+      - name: account_id
+        tests:
+          - relationships: {to: ref('accounts'), field: account_id}
+  - name: stg_sales_volume
+    tests:
+      - unique_combination: {columns: [scenario, entity_id, product_line_id, month_start]}
+    columns:
+      - name: product_line_id
+        tests:
+          - relationships: {to: ref('product_lines'), field: product_line_id}
+  - name: stg_fx_rates
+    tests:
+      - unique_combination: {columns: [currency, month_start]}

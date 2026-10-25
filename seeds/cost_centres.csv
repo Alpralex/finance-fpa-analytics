@@ -1,0 +1,8 @@
+cost_centre_id,cost_centre_name,function_group
+SAL,Sales,Commercial
+MKT,Marketing,Commercial
+OPS,Operations and warehouse,Operations
+FIN,Finance,Support
+IT,IT,Support
+HR,People and HR,Support
+MGT,Management,Support

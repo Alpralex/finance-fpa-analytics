@@ -1,0 +1,34 @@
+table mart_ebitda_bridge
+
+	column entity_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	column step_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: step_order
+
+	column step
+		dataType: string
+		summarizeBy: none
+		sortByColumn: step_order
+		sourceColumn: step
+
+	column amount_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: amount_eur
+
+	partition mart_ebitda_bridge = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "mart_ebitda_bridge.parquet" ) )
+				in
+					Source

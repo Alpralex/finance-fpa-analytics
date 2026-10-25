@@ -1,0 +1,24 @@
+version: 2
+
+seeds:
+  - name: entities
+    description: Legal entities of the fictional Atlântica Components group. Reporting currency is EUR.
+    columns:
+      - name: entity_id
+        tests: [unique, not_null]
+      - name: currency
+        tests:
+          - accepted_values: {values: ['EUR', 'GBP']}
+  - name: accounts
+    description: Chart of accounts with the management P&L hierarchy (group, subtotal, line order).
+    columns:
+      - name: account_id
+        tests: [unique, not_null]
+  - name: cost_centres
+    columns:
+      - name: cost_centre_id
+        tests: [unique, not_null]
+  - name: product_lines
+    columns:
+      - name: product_line_id
+        tests: [unique, not_null]

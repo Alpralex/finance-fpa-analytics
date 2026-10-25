@@ -1,0 +1,7 @@
+finance_fpa:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('FPA_DB_PATH', 'data/fpa.duckdb') }}"
+      threads: 4

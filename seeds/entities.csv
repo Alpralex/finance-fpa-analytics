@@ -1,0 +1,5 @@
+entity_id,entity_name,country,currency,region,sort_order
+PT01,Atlântica Portugal,Portugal,EUR,Iberia,1
+ES01,Atlántica España,Spain,EUR,Iberia,2
+FR01,Atlantique France,France,EUR,Western Europe,3
+UK01,Atlantica UK Ltd,United Kingdom,GBP,Western Europe,4

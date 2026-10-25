@@ -1,0 +1,7 @@
+/// Dynamic RLS: the signed-in user sees only the entities listed for their UPN in security_entity_access.
+role 'Entity controller'
+	modelPermission: read
+
+	tablePermission dim_entity = [entity_id] IN CALCULATETABLE ( VALUES ( security_entity_access[entity_id] ), security_entity_access[user_email] = USERPRINCIPALNAME () )
+
+	tablePermission security_entity_access = [user_email] = USERPRINCIPALNAME ()

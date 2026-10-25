@@ -1,0 +1,273 @@
+///$tab Main
+// FP&A budget vs actual for Atlântica Components (synthetic data, see ../generator).
+// Qlik Sense / Qlik Cloud. Upload the Parquet files from ../powerbi/data to the space's DataFiles
+// connection, or change vPath to a folder connection on Qlik Sense Desktop/Enterprise.
+// Reading Parquet needs Qlik Cloud or Qlik Sense Enterprise/Desktop May 2023 or later.
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='€#,##0;-€#,##0';
+SET DateFormat='YYYY-MM-DD';
+SET FirstWeekDay=0;
+SET BrokenWeeks=0;
+SET ReferenceDay=4;
+SET FirstMonthOfYear=1;
+
+LET vPath = 'lib://DataFiles/';
+
+// Close calendar of the data set. Year to date stops at the last closed month (September 2026),
+// so actual, budget and prior year always cover the same months, as in the Power BI model.
+LET vLastClosed  = Num(MakeDate(2026, 9, 1));
+LET vCurrentFY   = 2026;
+
+// Parquet DATE columns arrive as Qlik dates; the fallback parses text, in case a source writes ISO strings.
+SET fDate = Date(Floor(If(IsNum($1), $1, Date#($1, 'YYYY-MM-DD'))));
+
+///$tab Dimensions
+Entities:
+LOAD
+    entity_id                       AS EntityID,
+    entity_name                     AS Entity,
+    country                         AS Country,
+    currency                        AS Currency,
+    region                          AS Region,
+    sort_order                      AS [Entity Sort],
+    Upper(entity_id)                AS ENTITYID      // reduction field for Section Access (upper case)
+FROM [$(vPath)dim_entity.parquet] (parquet);
+
+Accounts:
+LOAD
+    account_id                      AS AccountID,
+    account_id & ' ' & account_name AS Account,
+    pnl_group                       AS [P&L Group],
+    pnl_subtotal                    AS [P&L Subtotal],
+    pnl_line_order                  AS [Line Order],
+    If(Left(account_id, 1) = '4', 1, 0) AS IsRevenue
+FROM [$(vPath)dim_account.parquet] (parquet);
+
+CostCentres:
+LOAD
+    cost_centre_id                  AS CostCentreID,
+    cost_centre_name                AS [Cost Centre],
+    function_group                  AS [Function]
+FROM [$(vPath)dim_cost_centre.parquet] (parquet);
+
+ProductLines:
+LOAD
+    product_line_id                 AS ProductLineID,
+    product_line_name               AS [Product Line]
+FROM [$(vPath)dim_product_line.parquet] (parquet);
+
+///$tab P&L structure
+// The P&L layout with cumulative subtotals, the associative way: each account is linked to its own
+// group line and to every subtotal it belongs to. Sum(Amount) by [P&L Line] then returns
+// Gross margin = revenue + cost of sales, EBITDA = gross margin + opex, EBIT = EBITDA + D&A,
+// without any chart-side logic. Qlik aggregates over the fact rows, so nothing is double counted.
+// Power BI does the same with the disconnected pnl_layout table and a SWITCH measure.
+// Do not put [P&L Line] in a filter pane: selecting "EBITDA" selects every account above it.
+LineNo:
+MAPPING LOAD * INLINE [
+Line, LineNo
+Net revenue, 1
+Cost of sales, 2
+People, 4
+Facilities, 5
+IT, 6
+Commercial, 7
+General and admin, 8
+D&A, 10
+];
+
+PnLStructure:
+LOAD
+    AccountID,
+    [P&L Group]                             AS [P&L Line],
+    ApplyMap('LineNo', [P&L Group], 99)     AS [P&L Line No],
+    0                                       AS [P&L Is Subtotal]
+RESIDENT Accounts;
+
+Concatenate (PnLStructure)
+LOAD AccountID, 'Gross margin' AS [P&L Line], 3 AS [P&L Line No], 1 AS [P&L Is Subtotal]
+RESIDENT Accounts WHERE [Line Order] <= 29;
+
+Concatenate (PnLStructure)
+LOAD AccountID, 'EBITDA' AS [P&L Line], 9 AS [P&L Line No], 1 AS [P&L Is Subtotal]
+RESIDENT Accounts WHERE [Line Order] <= 49;
+
+Concatenate (PnLStructure)
+LOAD AccountID, 'EBIT' AS [P&L Line], 11 AS [P&L Line No], 1 AS [P&L Is Subtotal]
+RESIDENT Accounts;
+
+///$tab Facts
+// Actuals and plan share entity, cost centre, account, product line and month. Loaded as two tables
+// they would build a five-field synthetic key, so they are concatenated into one fact table with a
+// Scenario field (ACT, BUD2025, BUD2026, FC2026_9+3). Sales volumes, the margin PVM and the journal
+// checks are concatenated too (FactType tells them apart), which keeps one key path per dimension.
+// A link table would also work, but with a single fact grain concatenation is simpler and faster.
+//
+// ScenarioType resolves the budget by year, like the DAX Budget measure: BUD2025 counts as Budget
+// for 2025 months and BUD2026 for 2026 months.
+Facts:
+LOAD
+    'GL'                                    AS FactType,
+    'ACT'                                   AS Scenario,
+    'Actual'                                AS ScenarioType,
+    entity_id                               AS EntityID,
+    cost_centre_id                          AS CostCentreID,
+    account_id                              AS AccountID,
+    product_line_id                         AS ProductLineID,
+    $(fDate(month_start))                   AS %Date,
+    amount_lc                               AS AmountLC,
+    amount_eur                              AS Amount,          // EUR at the monthly average rate
+    amount_eur_bud_rate                     AS AmountBudFX      // EUR at the budget rate of the year
+FROM [$(vPath)fct_actuals.parquet] (parquet);
+
+Concatenate (Facts)
+LOAD
+    'GL'                                    AS FactType,
+    scenario                                AS Scenario,
+    If(scenario = 'BUD' & Year($(fDate(month_start))), 'Budget',
+        If(WildMatch(scenario, 'FC*'), 'Reforecast', 'Other plan')) AS ScenarioType,
+    entity_id                               AS EntityID,
+    cost_centre_id                          AS CostCentreID,
+    account_id                              AS AccountID,
+    product_line_id                         AS ProductLineID,
+    $(fDate(month_start))                   AS %Date,
+    amount_lc                               AS AmountLC,
+    amount_eur                              AS Amount,
+    amount_eur_bud_rate                     AS AmountBudFX
+FROM [$(vPath)fct_plan.parquet] (parquet);
+
+Concatenate (Facts)
+LOAD
+    'Volume'                                AS FactType,
+    scenario                                AS Scenario,
+    If(scenario = 'ACT', 'Actual',
+        If(scenario = 'BUD' & Year($(fDate(month_start))), 'Budget',
+        If(WildMatch(scenario, 'FC*'), 'Reforecast', 'Other plan'))) AS ScenarioType,
+    entity_id                               AS EntityID,
+    product_line_id                         AS ProductLineID,
+    $(fDate(month_start))                   AS %Date,
+    units                                   AS Units,
+    revenue_eur                             AS VolumeRevenue
+FROM [$(vPath)fct_sales_volume.parquet] (parquet);
+
+// Product-margin bridge, budget to actual, Jan-Sep 2026 by construction (no month): measures on these
+// rows ignore calendar selections.
+Concatenate (Facts)
+LOAD
+    'PVM'                                   AS FactType,
+    entity_id                               AS EntityID,
+    product_line_id                         AS ProductLineID,
+    act_units                               AS [PVM Actual Units],
+    bud_units                               AS [PVM Budget Units],
+    budget_sales_eur                        AS [PVM Budget Sales],
+    actual_sales_eur                        AS [PVM Actual Sales],
+    budget_margin_eur                       AS [PVM Budget Margin],
+    actual_margin_eur                       AS [PVM Actual Margin],
+    volume_eur                              AS [PVM Volume],
+    mix_eur                                 AS [PVM Mix],
+    price_eur                               AS [PVM Price],
+    cost_eur                                AS [PVM Unit Cost],
+    fx_eur                                  AS [PVM FX]
+FROM [$(vPath)mart_margin_pvm.parquet] (parquet);
+
+Concatenate (Facts)
+LOAD
+    'Check'                                 AS FactType,
+    check_type                              AS [Check Type],
+    entity_id                               AS EntityID,
+    account_id                              AS AccountID,
+    $(fDate(month_start))                   AS %Date,
+    vendor                                  AS Vendor,
+    document_ref                            AS [Document Ref],
+    postings                                AS Postings,
+    amount_lc                               AS [Check Amount LC],
+    change_vs_ly                            AS [Check Change vs LY]
+FROM [$(vPath)mart_journal_checks.parquet] (parquet);
+
+// The EBITDA bridge has only one key (EntityID), so it stays a separate table without a synthetic key.
+EbitdaBridge:
+LOAD
+    entity_id                               AS EntityID,
+    step_order                              AS [Bridge Step No],
+    Dual(step, step_order)                  AS [Bridge Step],
+    amount_eur                              AS [Bridge Amount]
+FROM [$(vPath)mart_ebitda_bridge.parquet] (parquet);
+
+///$tab Calendar
+// Monthly master calendar: every fact sits on the first day of its month.
+TempRange:
+LOAD Min(%Date) AS MinD, Max(%Date) AS MaxD RESIDENT Facts;
+LET vMinD = Num(Peek('MinD', 0, 'TempRange'));
+LET vMaxD = Num(Peek('MaxD', 0, 'TempRange'));
+DROP TABLE TempRange;
+
+MasterCalendar:
+LOAD
+    Date(m)                                             AS %Date,
+    Year(m)                                             AS Year,
+    'Q' & Ceil(Month(m) / 3)                            AS Quarter,
+    Month(m)                                            AS Month,
+    Date(m, 'MMM YYYY')                                 AS YearMonth,
+    If(m <= $(vLastClosed), 'Closed', 'Open')           AS [Month Status],
+    // Flags for set analysis, so charts need no date arithmetic
+    If(m <= $(vLastClosed), 1, 0)                       AS _Closed,
+    If(Year(m) = $(vCurrentFY), 1, 0)                   AS _CY,
+    If(Year(m) = $(vCurrentFY) And m <= $(vLastClosed), 1, 0)          AS _YTD,
+    If(Year(m) = $(vCurrentFY) - 1 And Month(m) <= Month($(vLastClosed)), 1, 0) AS _PYTD;
+LOAD AddMonths($(vMinD), IterNo() - 1) AS m
+AUTOGENERATE 1 WHILE AddMonths($(vMinD), IterNo() - 1) <= $(vMaxD);
+
+///$tab Variables
+// Master measures are listed in master_items.md; the variables keep the expressions in one place.
+// $(vX) inside a SET is expanded at reload, which inlines the expression defined above it.
+SET vCal           = Year=, Quarter=, Month=, YearMonth=, %Date=, [Month Status]=;
+
+SET vActual        = Sum({<FactType={'GL'}, ScenarioType={'Actual'}>} Amount);
+SET vActualBudFX   = Sum({<FactType={'GL'}, ScenarioType={'Actual'}>} AmountBudFX);
+SET vBudget        = Sum({<FactType={'GL'}, ScenarioType={'Budget'}>} Amount);
+SET vForecast93    = (Sum({<FactType={'GL'}, ScenarioType={'Actual'}, _Closed*={1}>} Amount) + Sum({<FactType={'GL'}, ScenarioType={'Reforecast'}, _Closed*={0}>} Amount));
+SET vHasActual     = Count({<FactType={'GL'}, ScenarioType={'Actual'}>} Amount) > 0;
+SET vVarBudget     = If($(vHasActual), $(vActual) - $(vBudget));
+SET vVarBudgetPct  = If($(vHasActual), ($(vActual) - $(vBudget)) / Fabs($(vBudget)));
+
+SET vActualYTD     = Sum({<FactType={'GL'}, ScenarioType={'Actual'}, _YTD={1}, $(vCal)>} Amount);
+SET vActualBudFXYTD = Sum({<FactType={'GL'}, ScenarioType={'Actual'}, _YTD={1}, $(vCal)>} AmountBudFX);
+SET vBudgetYTD     = Sum({<FactType={'GL'}, ScenarioType={'Budget'}, _YTD={1}, $(vCal)>} Amount);
+SET vPriorYTD      = Sum({<FactType={'GL'}, ScenarioType={'Actual'}, _PYTD={1}, $(vCal)>} Amount);
+SET vFYBudget      = Sum({<FactType={'GL'}, ScenarioType={'Budget'}, _CY={1}, $(vCal)>} Amount);
+SET vFYForecast    = (Sum({<FactType={'GL'}, ScenarioType={'Actual'}, _CY={1}, _Closed={1}, $(vCal)>} Amount) + Sum({<FactType={'GL'}, ScenarioType={'Reforecast'}, _CY={1}, _Closed={0}, $(vCal)>} Amount));
+
+// Account scopes (add inside a set: {<..., $(vEBITDA)>})
+SET vNetRevenue    = [P&L Group]={'Net revenue'};
+SET vGrossMargin   = [P&L Subtotal]={'Gross margin'};
+SET vEBITDA        = [P&L Subtotal]={'Gross margin','EBITDA'};
+
+SET vNetRevenueYTD = Sum({<FactType={'GL'}, ScenarioType={'Actual'}, _YTD={1}, $(vCal), $(vNetRevenue)>} Amount);
+SET vEBITDAYTD     = Sum({<FactType={'GL'}, ScenarioType={'Actual'}, _YTD={1}, $(vCal), $(vEBITDA)>} Amount);
+
+///$tab Section Access
+// Row-level security for entity controllers, the same rule as the Power BI role "Entity controller":
+// each user sees only the entities listed for their e-mail in security_entity_access.parquet.
+// Commented out so the app loads for anyone. To switch it on:
+//   1. replace owner@example.com with your own login (an ADMIN row keeps you from locking yourself out),
+//   2. remove the leading // from the lines below and reload,
+//   3. on Qlik Sense Enterprise use USERID (DOMAIN\user) instead of USER.EMAIL.
+// The reduction field ENTITYID exists in the Entities table with upper-case values.
+// Group-wide users are listed against all four entities in the mapping file.
+//
+// Section Access;
+// SecurityAccess:
+// LOAD * INLINE [
+// ACCESS, USER.EMAIL, ENTITYID
+// ADMIN, OWNER@EXAMPLE.COM, *
+// ];
+// Concatenate (SecurityAccess)
+// LOAD
+//     'USER'                  AS ACCESS,
+//     Upper(user_email)       AS USER.EMAIL,
+//     Upper(entity_id)        AS ENTITYID
+// FROM [$(vPath)security_entity_access.parquet] (parquet);
+// Section Application;

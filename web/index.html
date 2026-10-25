@@ -1,0 +1,491 @@
+<meta charset="utf-8">
+<title>Atlântica FP&amp;A</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: a month-end pack for a group controller. Findings first, one filter row, then the P&L, the bridge that explains it, and the items to chase before close. */
+:root {
+  --paper: #f7f8f9;
+  --sheet: #ffffff;
+  --ink: #1b2430;
+  --muted: #5d6876;
+  --rule: #dce0e5;
+  --grid: #eceff2;
+  --signal: #1f5a85;
+  --signal-soft: #e6eef5;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --total: #5d6876;
+  --good: #1f7a35;
+  --good-soft: #e3f1e6;
+  --warn: #b25b00;
+  --warn-soft: #fbeedd;
+  --display: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --serif: "IBM Plex Serif", Georgia, serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121519; --sheet: #181c21; --ink: #e3e7eb; --muted: #97a2ad; --rule: #2a3038; --grid: #20252c;
+    --signal: #86b6da; --signal-soft: #1a2633;
+    --s1: #3987e5; --s2: #d95926; --total: #8a95a1;
+    --good: #5cb873; --good-soft: #17301e; --warn: #e09a4a; --warn-soft: #3a2812;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #121519; --sheet: #181c21; --ink: #e3e7eb; --muted: #97a2ad; --rule: #2a3038; --grid: #20252c;
+  --signal: #86b6da; --signal-soft: #1a2633;
+  --s1: #3987e5; --s2: #d95926; --total: #8a95a1;
+  --good: #5cb873; --good-soft: #17301e; --warn: #e09a4a; --warn-soft: #3a2812;
+  color-scheme: dark;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 1rem; line-height: 1.55; margin: 0; }
+.wrap { max-width: 72rem; margin: 0 auto; padding-block: 2.5rem 4rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 2rem; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.15; text-wrap: balance; }
+h1 { font-family: var(--serif); font-size: clamp(1.8rem, 4.2vw, 2.5rem); font-weight: 600; }
+h2 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.label { font-size: 0.88rem; color: var(--muted); }
+.crumb { font-size: 0.9rem; }
+a { color: var(--signal); text-underline-offset: 3px; }
+header { display: grid; gap: 0.75rem; }
+.meta { display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: 0.9rem; color: var(--muted); }
+
+.findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
+.finding { border-top: 1px solid var(--ink); padding-top: 0.75rem; display: grid; gap: 0.35rem; align-content: start; min-width: 0; }
+.finding b { font-weight: 600; font-size: 1rem; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: center; padding: 0.75rem 0; border-block: 1px solid var(--rule); position: sticky; top: env(safe-area-inset-top, 0px); background: var(--paper); z-index: 5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+.filters .grp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
+.seg button { font-family: var(--body); font-size: 0.88rem; padding: 0.35rem 0.7rem; background: var(--sheet); color: var(--ink); border: 0; border-right: 1px solid var(--rule); cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--signal-soft); color: var(--ink); box-shadow: inset 0 -2px 0 var(--signal); }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1rem; }
+.kpi { background: var(--sheet); border: 1px solid var(--rule); border-radius: 2px; padding: 1rem; display: grid; gap: 0.25rem; min-width: 0; }
+.kpi .v { font-family: var(--serif); font-size: 1.7rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.kpi .d { font-size: 0.85rem; color: var(--muted); }
+.fav { color: var(--good); } .adv { color: var(--warn); }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 1.25rem; }
+.panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: 2px; padding: 1.1rem; display: grid; gap: 0.75rem; align-content: start; min-width: 0; }
+.panel .sub { font-size: 0.9rem; color: var(--muted); }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--body); font-size: 11px; fill: var(--muted); }
+.chart .lbl { fill: var(--ink); font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; font-size: 0.85rem; color: var(--ink); }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 0.35rem; }
+.legend i.dash { background: repeating-linear-gradient(90deg, var(--muted) 0 5px, transparent 5px 8px) !important; }
+.legend i.dash1 { background: repeating-linear-gradient(90deg, var(--s1) 0 5px, transparent 5px 8px) !important; }
+.legend i.sq { width: 10px; height: 10px; border-radius: 2px; }
+
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--paper); font-family: var(--body); font-size: 0.8rem; padding: 0.45rem 0.6rem; border-radius: 3px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); z-index: 3; line-height: 1.45; }
+.tip[hidden] { display: none; }
+
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+th, td { padding: 0.4rem 0.55rem; text-align: right; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+th:first-child, td:first-child { text-align: left; }
+tr.sub td { font-weight: 600; border-top: 1px solid var(--ink); }
+tr.ratio td { color: var(--muted); font-style: italic; }
+tr.acct td:first-child { padding-left: 1.4rem; color: var(--muted); }
+tr.acct td { color: var(--muted); font-size: 0.8rem; }
+td.pos { background: var(--good-soft); } td.neg { background: var(--warn-soft); }
+.toggle { font-family: var(--body); font-size: 0.85rem; background: none; border: 0; padding: 0; color: var(--signal); cursor: pointer; text-decoration: underline; justify-self: start; }
+.method { display: grid; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; }
+.method ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.3rem; max-width: 80ch; }
+.note { font-size: 0.8rem; color: var(--muted); }
+.tag { display: inline-block; font-size: 0.75rem; padding: 0 0.4rem; border: 1px solid var(--rule); border-radius: 2px; color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="crumb"><a href="/">Guilherme Rigonato</a> <span class="label">/ Projects</span></p>
+    <span class="label">Synthetic group ledger · 4 entities · Jan 2024 – Sep 2026 · EUR</span>
+    <h1>Why is the group ahead of budget, and is it the good kind of ahead?</h1>
+    <p>A month-end pack for the fictional distributor Atlântica Components: management P&amp;L against budget and the 9+3 reforecast, an EBITDA bridge from budget to actual, a price-volume-mix split of product margin, and the ledger exceptions to clear before close. The general ledger is double-entry and reconciled to the sales sub-ledger by automated tests.</p>
+    <div class="meta">
+      <span>Last closed month: September 2026</span>
+      <span>dbt + DuckDB · 18 models · 67 tests</span>
+      <span>Also in Power BI and Qlik Sense</span>
+    </div>
+  </header>
+
+  <section class="findings" aria-label="Key findings">
+    <div class="finding"><span class="label">Finding 1</span><b>The group beats budget only because Portugal raised prices.</b><p>Year-to-date EBITDA is €4.41M against a budget of €4.17M (+5.7%). Portugal's 4% list-price rise adds €0.87M. Without it the group would be €0.63M, or 15%, below budget.</p></div>
+    <div class="finding"><span class="label">Finding 2</span><b>Spain's hiring savings hide a larger miss.</b><p>Late sales hires keep salaries €0.14M under budget. The same gap cost Hydraulics volume and service revenue, and Spain's EBITDA is 12.6% short.</p></div>
+    <div class="finding"><span class="label">Finding 3</span><b>The UK sells more in pounds and less in euros.</b><p>UK product sales are 1.6% above budget at the budget rate but 2.0% below in euros. Sterling averaged about 1.15 against a budget of 1.19, which cost €0.36M of sales.</p></div>
+    <div class="finding"><span class="label">Finding 4</span><b>Two cost leaks are worth chasing.</b><p>A steel surcharge on bearings from May costs €0.32M of margin. Portugal's new outbound carrier, since March, costs another €0.17M. The checks also catch a CloudSuite invoice posted twice in the UK in June.</p></div>
+  </section>
+
+  <section class="filters" aria-label="Filters">
+    <div class="grp"><span class="label">Entity</span><div class="seg" id="ent-seg"></div></div>
+    <div class="grp"><span class="label">Period</span>
+      <div class="seg" id="per-seg">
+        <button data-per="YTD" aria-pressed="true">Jan–Sep 2026</button>
+        <button data-per="SEP" aria-pressed="false">Sep 2026</button>
+        <button data-per="FY" aria-pressed="false">Full year (9+3)</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Headline figures"></section>
+
+  <section class="panel" aria-labelledby="pnl-h">
+    <h2 id="pnl-h">Management P&amp;L</h2>
+    <p class="sub" id="pnl-sub"></p>
+    <div class="tbl-wrap"><table id="pnl"></table></div>
+    <button class="toggle" id="pnl-toggle" aria-expanded="false">Show accounts</button>
+    <p class="note">Revenue is positive and costs negative, so a positive variance is always favourable. Shaded cells move EBITDA by more than 2% of budget.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="panel" aria-labelledby="br-h">
+      <h2 id="br-h">EBITDA bridge, budget to actual</h2>
+      <p class="sub">Jan–Sep 2026. Trading effects at budget exchange rates, then FX translation.</p>
+      <div class="chart" id="bridge"></div>
+      <div class="legend"><span><i class="sq" style="background:var(--total)"></i>Budget and actual</span><span><i class="sq" style="background:var(--good)"></i>Favourable</span><span><i class="sq" style="background:var(--warn)"></i>Adverse</span></div>
+    </section>
+    <section class="panel" aria-labelledby="mo-h">
+      <h2 id="mo-h">EBITDA by month</h2>
+      <p class="sub">Actual for closed months, the October reforecast for the rest of 2026.</p>
+      <div class="legend" id="mo-legend"><span><i style="background:var(--s1)"></i>Actual</span><span><i class="dash1"></i>Reforecast</span><span><i class="dash"></i>Budget</span></div>
+      <div class="chart" id="monthly"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="pvm-h">
+    <h2 id="pvm-h">Product margin: volume, mix, price, cost and FX</h2>
+    <p class="sub">Jan–Sep 2026, sales minus cost of materials, budget to actual, in thousands of euros.</p>
+    <div class="tbl-wrap"><table id="pvm"></table></div>
+    <p class="note">Volume is actual units at budget prices, so fasteners and pumps add up in one unit. Mix is the margin lost or gained because the sales moved between lines with different margins.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="panel" aria-labelledby="cc-h">
+      <h2 id="cc-h">Operating costs by cost centre</h2>
+      <p class="sub">Jan–Sep 2026, actual minus budget. Right is favourable.</p>
+      <div class="chart" id="cc"></div>
+    </section>
+    <section class="panel" aria-labelledby="fx-h">
+      <h2 id="fx-h">Sterling against the budget rate</h2>
+      <p class="sub">Monthly average euros per pound.</p>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Actual rate</span><span><i class="dash"></i>Budget rate</span></div>
+      <div class="chart" id="fx"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="chk-h">
+    <h2 id="chk-h">Ledger exceptions to clear before close</h2>
+    <p class="sub">Duplicate supplier invoices, and costs that moved more than 25% against both the last three months and the same month last year.</p>
+    <div class="tbl-wrap"><table id="checks"></table></div>
+  </section>
+
+  <section class="method" aria-label="Method">
+    <h2>How it is built</h2>
+    <ul>
+      <li>The data are synthetic: a Python generator writes 81,000 journal lines, budgets, a reforecast, a sales sub-ledger and FX rates for a fictional company. Eight business stories are planted on purpose and listed in the README, so the findings can be checked.</li>
+      <li>dbt models on DuckDB turn the ledger into a star schema (entity, account hierarchy, cost centre, product line, month) and marts for the P&amp;L, the bridge and the exceptions.</li>
+      <li>Tests check that every journal balances, that the sales sub-ledger agrees with the ledger to the cent, and that both bridges add up exactly to the variance they explain.</li>
+      <li>The same marts feed a Power BI model (DAX measures, row-level security by entity) and a Qlik Sense app (set analysis, section access).</li>
+    </ul>
+    <p class="note">Code: <a href="https://github.com/Alpralex/finance-fpa-analytics">github.com/Alpralex/finance-fpa-analytics</a></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  var D = {};
+  var DEF = { ent: 'ALL', per: 'YTD' };
+  var state = { ent: DEF.ent, per: DEF.per, accounts: false };
+
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(parent, x, y, s, attrs) { var t = el('text', Object.assign({ x: x, y: y }, attrs || {}), parent); t.textContent = s; return t; }
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function niceStep(span) { var raw = span / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
+  var minus = '−';
+  function eurM(v) { return (v < 0 ? minus : '') + '€' + Math.abs(v / 1e6).toFixed(2) + 'M'; }
+  function eurK(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : r > 0 ? '+' : '') + Math.abs(r).toLocaleString('en-US'); }
+  function k(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : '') + Math.abs(r).toLocaleString('en-US'); }
+  function pct(v, d) { if (v == null || !isFinite(v)) return '–'; return (v > 0 ? '+' : v < 0 ? minus : '') + Math.abs(v * 100).toFixed(d == null ? 1 : d) + '%'; }
+  function share(v) { return v == null || !isFinite(v) ? '–' : (v * 100).toFixed(1) + '%'; }
+  function cls(v) { return v > 0 ? 'fav' : v < 0 ? 'adv' : ''; }
+  function inEnt(e) { return state.ent === 'ALL' || e === state.ent; }
+  function entName(id) { var e = D.meta.entities.find(function (x) { return x[0] === id; }); return e ? e[1] : id; }
+  function acct(id) { return D.acct[id]; }
+  function monthLabel(ym) { return new Date(ym + '-01T00:00:00').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); }
+
+  // ---------- P&L aggregation ----------
+  var GROUPS = ['Net revenue', 'Cost of sales', 'People', 'Facilities', 'IT', 'Commercial', 'General and admin', 'D&A'];
+  function periodRows() {
+    return D.pnl.filter(function (r) {
+      if (!inEnt(r[1])) return false;
+      if (state.per === 'YTD') return r[0] >= '2026-01' && r[0] <= '2026-09';
+      if (state.per === 'SEP') return r[0] === '2026-09';
+      return r[0].slice(0, 4) === '2026';
+    });
+  }
+  // returns {a: compared value (actual or forecast), b: budget, p: prior year} per account
+  function byAccount() {
+    var out = {};
+    periodRows().forEach(function (r) {
+      var o = out[r[2]] = out[r[2]] || { a: 0, b: 0, p: 0 };
+      o.a += (state.per === 'FY' ? r[5] : r[3]) || 0; o.b += r[4] || 0; o.p += r[6] || 0;
+    });
+    return out;
+  }
+  function sumWhere(acc, test) { var s = { a: 0, b: 0, p: 0 }; D.meta.accounts.forEach(function (x) { if (test(x) && acc[x[0]]) { s.a += acc[x[0]].a; s.b += acc[x[0]].b; s.p += acc[x[0]].p; } }); return s; }
+  function totals(acc) {
+    var rev = sumWhere(acc, function (x) { return x[2] === 'Net revenue'; });
+    var gm = sumWhere(acc, function (x) { return x[3] === 'Gross margin'; });
+    var ebitda = sumWhere(acc, function (x) { return x[3] === 'Gross margin' || x[3] === 'EBITDA'; });
+    var ebit = sumWhere(acc, function () { return true; });
+    return { rev: rev, gm: gm, ebitda: ebitda, ebit: ebit };
+  }
+  function periodName() { return state.per === 'YTD' ? 'Jan–Sep 2026' : state.per === 'SEP' ? 'September 2026' : 'Full year 2026'; }
+  function aName() { return state.per === 'FY' ? 'Forecast 9+3' : 'Actual'; }
+
+  function renderKpis() {
+    var t = totals(byAccount());
+    var tiles = [
+      ['Net revenue · ' + aName().toLowerCase(), eurM(t.rev.a), pct(t.rev.a / t.rev.b - 1), 'vs budget ' + eurM(t.rev.b), t.rev.a - t.rev.b],
+      ['Gross margin', share(t.gm.a / t.rev.a), pct(t.gm.a / t.rev.a - t.gm.b / t.rev.b, 1).replace('%', ' pts'), 'budget ' + share(t.gm.b / t.rev.b), t.gm.a / t.rev.a - t.gm.b / t.rev.b],
+      ['EBITDA · ' + aName().toLowerCase(), eurM(t.ebitda.a), pct(t.ebitda.a / t.ebitda.b - 1), 'vs budget ' + eurM(t.ebitda.b), t.ebitda.a - t.ebitda.b],
+      ['EBITDA vs prior year', pct(t.ebitda.a / t.ebitda.p - 1), '', (state.per === 'FY' ? 'FY 2025 ' : 'same months 2025 ') + eurM(t.ebitda.p), t.ebitda.a - t.ebitda.p]
+    ];
+    document.getElementById('kpis').innerHTML = tiles.map(function (x) {
+      return '<div class="kpi"><span class="label">' + x[0] + ' · ' + periodName() + '</span><span class="v">' + x[1] + '</span><span class="d">' +
+        (x[2] ? '<span class="' + cls(x[4]) + '">' + x[2] + '</span> ' : '') + x[3] + '</span></div>';
+    }).join('');
+  }
+
+  function renderPnl() {
+    var acc = byAccount(), t = totals(acc), thr = Math.abs(t.ebitda.b) * 0.02;
+    document.getElementById('pnl-sub').textContent = (state.ent === 'ALL' ? 'Group, all four entities' : entName(state.ent)) + ' · ' + periodName() + ' · thousands of euros';
+    var head = '<thead><tr><th></th><th>' + aName() + '</th><th>Budget</th><th>Variance</th><th>Var %</th><th>' + (state.per === 'FY' ? 'FY 2025' : 'Prior year') + '</th><th>vs PY</th></tr></thead>';
+    function row(name, s, klass) {
+      var v = s.a - s.b, shade = klass !== 'acct' && Math.abs(v) > thr ? (v > 0 ? ' pos' : ' neg') : '';
+      return '<tr class="' + (klass || '') + '"><td>' + name + '</td><td>' + k(s.a) + '</td><td>' + k(s.b) + '</td><td class="' + shade + '"><span class="' + cls(v) + '">' + eurK(v) + '</span></td><td>' + pct(s.b ? v / Math.abs(s.b) : null) + '</td><td>' + k(s.p) + '</td><td>' + pct(s.p ? (s.a - s.p) / Math.abs(s.p) : null) + '</td></tr>';
+    }
+    function ratio(name, num, den) {
+      return '<tr class="ratio"><td>' + name + '</td><td>' + share(num.a / den.a) + '</td><td>' + share(num.b / den.b) + '</td><td>' + pct(num.a / den.a - num.b / den.b).replace('%', ' pts') + '</td><td></td><td>' + share(num.p / den.p) + '</td><td></td></tr>';
+    }
+    var body = '';
+    GROUPS.forEach(function (g) {
+      body += row(g, sumWhere(acc, function (x) { return x[2] === g; }));
+      if (state.accounts) D.meta.accounts.filter(function (x) { return x[2] === g; }).forEach(function (x) { body += row(x[1], acc[x[0]] || { a: 0, b: 0, p: 0 }, 'acct'); });
+      if (g === 'Cost of sales') { body += row('Gross margin', t.gm, 'sub'); body += ratio('Gross margin %', t.gm, t.rev); }
+      if (g === 'General and admin') { body += row('EBITDA', t.ebitda, 'sub'); body += ratio('EBITDA %', t.ebitda, t.rev); }
+    });
+    body += row('EBIT', t.ebit, 'sub');
+    document.getElementById('pnl').innerHTML = head + '<tbody>' + body + '</tbody>';
+  }
+
+  // ---------- EBITDA bridge (horizontal waterfall) ----------
+  function renderBridge() {
+    var host = document.getElementById('bridge'); host.innerHTML = '';
+    var steps = [];
+    D.bridge.forEach(function (r) { if (!inEnt(r[0])) return; var s = steps[r[1] - 1] = steps[r[1] - 1] || { name: r[2], v: 0 }; s.v += r[3]; });
+    var W = 520, rowH = 26, m = { t: 6, r: 64, b: 22, l: 150 }, H = m.t + m.b + steps.length * rowH;
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'EBITDA bridge from budget to actual' }, host);
+    var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
+    var run = 0, bars = [];
+    steps.forEach(function (s, i) {
+      if (i === 0) { bars.push({ s: s, x0: 0, x1: s.v, total: true }); run = s.v; }
+      else if (i === steps.length - 1) bars.push({ s: s, x0: 0, x1: s.v, total: true });
+      else { bars.push({ s: s, x0: run, x1: run + s.v }); run += s.v; }
+    });
+    var lo = Math.min(0, Math.min.apply(null, bars.map(function (b) { return Math.min(b.x0, b.x1); })));
+    var hi = Math.max.apply(null, bars.map(function (b) { return Math.max(b.x0, b.x1); })) * 1.02;
+    var X = function (v) { return m.l + (v - lo) / (hi - lo) * (W - m.l - m.r); };
+    var step = niceStep(hi - lo);
+    for (var g = Math.ceil(lo / step) * step; g <= hi; g += step) { el('line', { x1: X(g), x2: X(g), y1: m.t, y2: H - m.b, stroke: css('--grid') }, svg); txt(svg, X(g), H - 6, eurM(g).replace('.00M', 'M'), { 'text-anchor': 'middle' }); }
+    bars.forEach(function (b, i) {
+      var y = m.t + i * rowH, x = Math.min(X(b.x0), X(b.x1)), w = Math.max(1.5, Math.abs(X(b.x1) - X(b.x0)));
+      var color = b.total ? css('--total') : b.s.v >= 0 ? css('--good') : css('--warn');
+      txt(svg, m.l - 8, y + rowH / 2 + 4, b.s.name, { 'text-anchor': 'end', class: b.total ? 'lbl' : '' });
+      el('rect', { x: x, y: y + 5, width: w, height: rowH - 10, rx: 2, fill: color }, svg);
+      if (i > 0 && i < bars.length) { var prevEnd = bars[i - 1].total ? bars[i - 1].x1 : bars[i - 1].x1; el('line', { x1: X(prevEnd), x2: X(prevEnd), y1: y - 5, y2: y + 5, stroke: css('--muted'), 'stroke-dasharray': '2 2' }, svg); }
+      txt(svg, Math.max(X(b.x0), X(b.x1)) + 6, y + rowH / 2 + 4, b.total ? eurM(b.s.v) : eurK(b.s.v) + 'k', { class: 'lbl' });
+      var hit = el('rect', { x: m.l, y: y, width: W - m.l - m.r, height: rowH, fill: 'transparent' }, svg);
+      hit.addEventListener('pointerenter', function () { var bb = svg.getBoundingClientRect(); tip.innerHTML = b.s.name + '<br>' + (b.total ? eurM(b.s.v) : eurK(b.s.v) + ' thousand euros'); tip.style.left = ((x + w / 2) / W * bb.width) + 'px'; tip.style.top = ((y + 5) / H * bb.height) + 'px'; tip.hidden = false; });
+      hit.addEventListener('pointerleave', function () { tip.hidden = true; });
+    });
+  }
+
+  // ---------- EBITDA by month ----------
+  function renderMonthly() {
+    var host = document.getElementById('monthly'); host.innerHTML = '';
+    var months = [], seen = {};
+    D.pnl.forEach(function (r) { if (r[0] >= '2025-01' && !seen[r[0]]) { seen[r[0]] = 1; months.push(r[0]); } });
+    months.sort();
+    var act = {}, bud = {}, fc = {};
+    D.pnl.forEach(function (r) {
+      if (!inEnt(r[1]) || r[0] < '2025-01') return; var a = acct(r[2]); if (!a || (a[3] !== 'Gross margin' && a[3] !== 'EBITDA')) return;
+      if (r[3] != null) act[r[0]] = (act[r[0]] || 0) + r[3];
+      if (r[4] != null) bud[r[0]] = (bud[r[0]] || 0) + r[4];
+      if (r[5] != null) fc[r[0]] = (fc[r[0]] || 0) + r[5];
+    });
+    var series = [
+      { name: 'Actual', color: '--s1', values: months.map(function (m) { return act[m] == null ? null : act[m]; }) },
+      { name: 'Reforecast', color: '--s1', dash: '5 4', values: months.map(function (m) { return m >= '2026-09' ? fc[m] : null; }) },
+      { name: 'Budget', color: '--muted', dash: '5 4', values: months.map(function (m) { return bud[m] == null ? null : bud[m]; }) }
+    ];
+    var W = 520, H = 250, m = { t: 12, r: 12, b: 26, l: 52 };
+    var all = []; series.forEach(function (s) { s.values.forEach(function (v) { if (v != null) all.push(v); }); });
+    var lo0 = Math.min(0, Math.min.apply(null, all)), hiV = Math.max.apply(null, all), st = niceStep(hiV - lo0), top = Math.ceil(hiV / st) * st, lo = Math.floor(lo0 / st) * st;
+    var X = function (i) { return m.l + i / (months.length - 1) * (W - m.l - m.r); };
+    var Y = function (v) { return H - m.b - (v - lo) / (top - lo) * (H - m.t - m.b); };
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Monthly EBITDA, actual, reforecast and budget' }, host);
+    var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
+    for (var g = Math.floor(lo / st) * st; g <= top + 1; g += st) { el('line', { x1: m.l, x2: W - m.r, y1: Y(g), y2: Y(g), stroke: css('--grid') }, svg); txt(svg, m.l - 6, Y(g) + 4, (Math.abs(g) < 1 ? '€0' : eurM(g).replace(/0M$/, 'M')), { 'text-anchor': 'end' }); }
+    months.forEach(function (mo, i) { if (mo.slice(5) === '01' || mo.slice(5) === '07') txt(svg, X(i), H - 8, monthLabel(mo), { 'text-anchor': 'middle' }); });
+    series.slice().reverse().forEach(function (s) {
+      var d = '', pen = false;
+      s.values.forEach(function (v, i) { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; });
+      var p = el('path', { d: d, fill: 'none', stroke: css(s.color), 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+      if (s.dash) p.setAttribute('stroke-dasharray', s.dash);
+    });
+    var cross = el('line', { y1: m.t, y2: H - m.b, stroke: css('--muted'), visibility: 'hidden' }, svg);
+    var dots = series.map(function (s) { return el('circle', { r: 4, fill: css(s.color), stroke: css('--sheet'), 'stroke-width': 2, visibility: 'hidden' }, svg); });
+    var hit = el('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: 'transparent' }, svg);
+    hit.addEventListener('pointermove', function (evt) {
+      var b = svg.getBoundingClientRect(), px = (evt.clientX - b.left) / b.width * W;
+      var i = Math.max(0, Math.min(months.length - 1, Math.round((px - m.l) / (W - m.l - m.r) * (months.length - 1))));
+      cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('visibility', 'visible');
+      var top = Infinity;
+      dots.forEach(function (d, j) { var v = series[j].values[i]; if (v == null || (j === 1 && months[i] <= '2026-09')) { d.setAttribute('visibility', 'hidden'); return; } top = Math.min(top, Y(v)); d.setAttribute('cx', X(i)); d.setAttribute('cy', Y(v)); d.setAttribute('visibility', 'visible'); });
+      var lines = series.filter(function (s, j) { return s.values[i] != null && !(j === 1 && months[i] <= '2026-09'); }).map(function (s) { return '<br>' + s.name + ': ' + eurM(s.values[i]); });
+      tip.innerHTML = monthLabel(months[i]) + lines.join('');
+      tip.style.left = (X(i) / W * b.width) + 'px'; tip.style.top = (top / H * b.height) + 'px'; tip.hidden = false;
+    });
+    hit.addEventListener('pointerleave', function () { cross.setAttribute('visibility', 'hidden'); dots.forEach(function (d) { d.setAttribute('visibility', 'hidden'); }); tip.hidden = true; });
+  }
+
+  // ---------- margin PVM ----------
+  function renderPvm() {
+    var lines = {}, order = D.meta.product_lines.map(function (p) { return p[0]; });
+    D.pvm.forEach(function (r) {
+      if (!inEnt(r[0])) return;
+      var o = lines[r[1]] = lines[r[1]] || { bm: 0, vol: 0, mix: 0, price: 0, cost: 0, fx: 0, am: 0, bs: 0, as: 0 };
+      o.bs += r[4]; o.as += r[5]; o.bm += r[6]; o.am += r[7]; o.vol += r[11]; o.mix += r[12]; o.price += r[13]; o.cost += r[14]; o.fx += r[15];
+    });
+    var tot = { bm: 0, vol: 0, mix: 0, price: 0, cost: 0, fx: 0, am: 0, bs: 0, as: 0 };
+    order.forEach(function (p) { var o = lines[p]; if (!o) return; for (var key in tot) tot[key] += o[key]; });
+    var thr = Math.max(20000, Math.abs(tot.bm) * 0.01);
+    function cell(v) { return '<td class="' + (Math.abs(v) >= thr ? (v > 0 ? 'pos' : 'neg') : '') + '">' + eurK(v) + '</td>'; }
+    function row(name, o, sub) {
+      return '<tr' + (sub ? ' class="sub"' : '') + '><td>' + name + '</td><td>' + k(o.bm) + '</td>' + cell(o.vol) + cell(o.mix) + cell(o.price) + cell(o.cost) + cell(o.fx) + '<td>' + k(o.am) + '</td><td>' + share(o.am / o.as) + '</td><td>' + share(o.bm / o.bs) + '</td></tr>';
+    }
+    var head = '<thead><tr><th>Product line</th><th>Budget margin</th><th>Volume</th><th>Mix</th><th>Price</th><th>Unit cost</th><th>FX</th><th>Actual margin</th><th>Margin %</th><th>Budget %</th></tr></thead>';
+    var body = order.map(function (p) { var n = D.meta.product_lines.find(function (x) { return x[0] === p; })[1]; return lines[p] ? row(n, lines[p]) : ''; }).join('') + row('Total', tot, true);
+    document.getElementById('pvm').innerHTML = head + '<tbody>' + body + '</tbody>';
+  }
+
+  // ---------- cost centres (diverging bars) ----------
+  function renderCc() {
+    var host = document.getElementById('cc'); host.innerHTML = '';
+    var by = {};
+    D.opex.forEach(function (r) { if (!inEnt(r[0])) return; var o = by[r[1]] = by[r[1]] || { a: 0, b: 0 }; o.a += r[3]; o.b += r[4]; });
+    var rows = D.meta.cost_centres.filter(function (c) { return by[c[0]]; }).map(function (c) { return { name: c[1], v: by[c[0]].a - by[c[0]].b, a: by[c[0]].a, b: by[c[0]].b }; })
+      .sort(function (x, y) { return x.v - y.v; });
+    var W = 520, rowH = 28, m = { t: 6, r: 58, b: 22, l: 168 }, H = m.t + m.b + rows.length * rowH;
+    var maxAbs = Math.max.apply(null, rows.map(function (r) { return Math.abs(r.v); })) || 1;
+    var mid = m.l + (W - m.l - m.r) / 2, X = function (v) { return mid + v / maxAbs * (W - m.l - m.r) / 2; };
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Operating cost variance by cost centre' }, host);
+    var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
+    el('line', { x1: mid, x2: mid, y1: m.t, y2: H - m.b, stroke: css('--muted') }, svg);
+    txt(svg, m.l, H - 6, 'adverse', {}); txt(svg, W - m.r, H - 6, 'favourable', { 'text-anchor': 'end' });
+    rows.forEach(function (r, i) {
+      var y = m.t + i * rowH, x0 = Math.min(X(0), X(r.v)), w = Math.max(1.5, Math.abs(X(r.v) - X(0)));
+      txt(svg, m.l - 8, y + rowH / 2 + 4, r.name, { 'text-anchor': 'end' });
+      el('rect', { x: x0, y: y + 6, width: w, height: rowH - 12, rx: 2, fill: r.v >= 0 ? css('--good') : css('--warn') }, svg);
+      txt(svg, r.v >= 0 ? X(r.v) + 6 : X(r.v) - 6, y + rowH / 2 + 4, eurK(r.v) + 'k', { 'text-anchor': r.v >= 0 ? 'start' : 'end', class: 'lbl' });
+      var hit = el('rect', { x: m.l, y: y, width: W - m.l - m.r, height: rowH, fill: 'transparent' }, svg);
+      hit.addEventListener('pointerenter', function () { var bb = svg.getBoundingClientRect(); tip.innerHTML = r.name + '<br>Actual ' + eurM(r.a) + ' · budget ' + eurM(r.b) + '<br>Variance ' + eurK(r.v) + 'k'; tip.style.left = ((x0 + w / 2) / W * bb.width) + 'px'; tip.style.top = ((y + 6) / H * bb.height) + 'px'; tip.hidden = false; });
+      hit.addEventListener('pointerleave', function () { tip.hidden = true; });
+    });
+  }
+
+  // ---------- FX ----------
+  function renderFx() {
+    var host = document.getElementById('fx'); host.innerHTML = '';
+    var rows = D.meta.fx, W = 520, H = 220, m = { t: 12, r: 12, b: 26, l: 44 };
+    var vals = []; rows.forEach(function (r) { vals.push(r[1], r[2]); });
+    var lo = Math.floor(Math.min.apply(null, vals) * 50) / 50, hi = Math.ceil(Math.max.apply(null, vals) * 50) / 50;
+    var X = function (i) { return m.l + i / (rows.length - 1) * (W - m.l - m.r); }, Y = function (v) { return H - m.b - (v - lo) / (hi - lo) * (H - m.t - m.b); };
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Euros per pound, actual and budget rate' }, host);
+    var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
+    for (var g = lo; g <= hi + 1e-9; g += 0.02) { el('line', { x1: m.l, x2: W - m.r, y1: Y(g), y2: Y(g), stroke: css('--grid') }, svg); txt(svg, m.l - 6, Y(g) + 4, g.toFixed(2), { 'text-anchor': 'end' }); }
+    rows.forEach(function (r, i) { if (r[0].slice(5) === '01') txt(svg, X(i), H - 8, r[0].slice(0, 4), { 'text-anchor': 'middle' }); });
+    function path(col) { return rows.map(function (r, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(r[col]).toFixed(1); }).join(''); }
+    el('path', { d: path(2), fill: 'none', stroke: css('--muted'), 'stroke-width': 2, 'stroke-dasharray': '5 4' }, svg);
+    el('path', { d: path(1), fill: 'none', stroke: css('--s1'), 'stroke-width': 2, 'stroke-linejoin': 'round' }, svg);
+    var cross = el('line', { y1: m.t, y2: H - m.b, stroke: css('--muted'), visibility: 'hidden' }, svg);
+    var dot = el('circle', { r: 4, fill: css('--s1'), stroke: css('--sheet'), 'stroke-width': 2, visibility: 'hidden' }, svg);
+    var hit = el('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: 'transparent' }, svg);
+    hit.addEventListener('pointermove', function (evt) {
+      var b = svg.getBoundingClientRect(), px = (evt.clientX - b.left) / b.width * W;
+      var i = Math.max(0, Math.min(rows.length - 1, Math.round((px - m.l) / (W - m.l - m.r) * (rows.length - 1))));
+      cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('visibility', 'visible');
+      dot.setAttribute('cx', X(i)); dot.setAttribute('cy', Y(rows[i][1])); dot.setAttribute('visibility', 'visible');
+      tip.innerHTML = monthLabel(rows[i][0]) + '<br>Actual ' + rows[i][1].toFixed(3) + '<br>Budget ' + rows[i][2].toFixed(2);
+      tip.style.left = (X(i) / W * b.width) + 'px'; tip.style.top = (Y(Math.max(rows[i][1], rows[i][2])) / H * b.height) + 'px'; tip.hidden = false;
+    });
+    hit.addEventListener('pointerleave', function () { cross.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; });
+  }
+
+  // ---------- ledger checks ----------
+  function renderChecks() {
+    var rows = D.checks.filter(function (r) { return inEnt(r[1]); });
+    var head = '<thead><tr><th>Month</th><th>Entity</th><th>Account</th><th>Check</th><th>What moved</th><th>Amount (local)</th></tr></thead>';
+    var body = rows.slice().reverse().map(function (r) {
+      var a = acct(r[2]), cur = D.meta.entities.find(function (e) { return e[0] === r[1]; })[3] === 'GBP' ? '£' : '€';
+      var what = r[0] === 'duplicate_invoice' ? r[4] + ' · ' + r[5] + ' posted ' + r[6] + ' times' : pct(r[8], 0) + ' vs same month last year';
+      var amount = r[0] === 'duplicate_invoice' ? cur + Math.round(r[7]).toLocaleString('en-US') + ' extra' : (r[7] < 0 ? minus : '+') + cur + Math.abs(Math.round(r[7])).toLocaleString('en-US') + ' cost';
+      if (r[0] !== 'duplicate_invoice') amount = (r[7] < 0 ? '+' : minus) + cur + Math.abs(Math.round(r[7])).toLocaleString('en-US') + ' cost';
+      return '<tr><td>' + monthLabel(r[3]) + '</td><td>' + r[1] + '</td><td>' + r[2] + ' ' + (a ? a[1] : '') + '</td><td><span class="tag">' + (r[0] === 'duplicate_invoice' ? 'Duplicate invoice' : 'Spike') + '</span></td><td>' + what + '</td><td>' + amount + '</td></tr>';
+    }).join('');
+    document.getElementById('checks').innerHTML = head + '<tbody>' + (body || '<tr><td colspan="6">No exceptions for this entity.</td></tr>') + '</tbody>';
+  }
+
+  function render() { renderKpis(); renderPnl(); renderBridge(); renderMonthly(); renderPvm(); renderCc(); renderFx(); renderChecks(); }
+
+  function seg(id, key) {
+    document.getElementById(id).addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      state[key] = b.dataset[key];
+      this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      render();
+    });
+  }
+  document.getElementById('pnl-toggle').addEventListener('click', function () {
+    state.accounts = !state.accounts; this.setAttribute('aria-expanded', String(state.accounts));
+    this.textContent = state.accounts ? 'Hide accounts' : 'Show accounts'; renderPnl();
+  });
+
+  Promise.all(['pnl', 'bridge', 'pvm', 'opex', 'checks', 'meta'].map(function (n) { return fetch('data/' + n + '.json').then(function (r) { return r.json(); }); }))
+    .then(function (res) {
+      D.pnl = res[0]; D.bridge = res[1]; D.pvm = res[2]; D.opex = res[3]; D.checks = res[4]; D.meta = res[5];
+      D.acct = {}; D.meta.accounts.forEach(function (a) { D.acct[a[0]] = a; });
+      var es = document.getElementById('ent-seg');
+      es.innerHTML = '<button data-ent="ALL" aria-pressed="true">Group</button>' + D.meta.entities.map(function (e) { return '<button data-ent="' + e[0] + '" aria-pressed="false">' + e[2] + '</button>'; }).join('');
+      seg('ent-seg', 'ent'); seg('per-seg', 'per');
+      render();
+      var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(render, 150); });
+      if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+    })
+    .catch(function (err) { console.error(err); document.getElementById('kpis').innerHTML = '<p>The data files did not load. Reload the page to try again.</p>'; });
+})();
+</script>

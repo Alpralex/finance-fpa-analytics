@@ -1,0 +1,25 @@
+table dim_cost_centre
+
+	column cost_centre_id
+		dataType: string
+		isKey
+		summarizeBy: none
+		sourceColumn: cost_centre_id
+
+	column cost_centre_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cost_centre_name
+
+	column function_group
+		dataType: string
+		summarizeBy: none
+		sourceColumn: function_group
+
+	partition dim_cost_centre = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "dim_cost_centre.parquet" ) )
+				in
+					Source

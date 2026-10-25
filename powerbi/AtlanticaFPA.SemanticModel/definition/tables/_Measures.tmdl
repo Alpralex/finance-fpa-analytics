@@ -1,0 +1,500 @@
+/// Holds every measure. The single column is hidden so Power BI shows the table as a measure table.
+table _Measures
+
+	/// Closed-month actuals in EUR at the monthly average rate. Reporting sign: revenue positive, costs negative.
+	measure 'Actual' = SUM ( fct_actuals[amount_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	/// Actuals translated at the budget rate of the year.
+	measure 'Actual at Budget FX' = SUM ( fct_actuals[amount_eur_bud_rate] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	/// Translation effect: actual at actual rate minus actual at budget rate. Only UK01 (GBP) has one.
+	measure 'FX Effect' = [Actual] - [Actual at Budget FX]
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	/// Budget of the year in context: BUD2025 for 2025 months, BUD2026 for 2026 months.
+	measure 'Budget' =
+			SUMX (
+				VALUES ( dim_date[fiscal_year] ),
+				VAR _Scenario = "BUD" & dim_date[fiscal_year]
+				RETURN
+					CALCULATE ( SUM ( fct_plan[amount_eur] ), fct_plan[scenario] = _Scenario )
+			)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	/// October reforecast, open months only (Oct to Dec 2026).
+	measure 'Reforecast' = CALCULATE ( SUM ( fct_plan[amount_eur] ), fct_plan[scenario] = "FC2026_9+3" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	/// Actual for closed months plus the reforecast for open months.
+	measure 'Forecast 9+3' =
+			CALCULATE ( [Actual], KEEPFILTERS ( dim_date[is_closed] = TRUE () ) )
+				+ CALCULATE ( [Reforecast], KEEPFILTERS ( dim_date[is_closed] = FALSE () ) )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	measure 'Prior Year' = CALCULATE ( [Actual], SAMEPERIODLASTYEAR ( dim_date[date_day] ) )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	/// Actual minus budget. Positive is always favourable because costs carry a negative sign.
+	measure 'Var vs Budget' = IF ( NOT ISBLANK ( [Actual] ), [Actual] - [Budget] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	/// Variance over the absolute budget, so the sign keeps meaning favourable or unfavourable on cost lines.
+	measure 'Var vs Budget %' = DIVIDE ( [Var vs Budget], ABS ( [Budget] ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 1 Base
+
+	/// Variance at constant (budget) FX rates: the part of the variance that is not translation.
+	measure 'Trading Var vs Budget' = IF ( NOT ISBLANK ( [Actual] ), [Actual at Budget FX] - [Budget] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	measure 'Var vs PY' = IF ( NOT ISBLANK ( [Actual] ), [Actual] - [Prior Year] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 1 Base
+
+	measure 'Var vs PY %' = DIVIDE ( [Var vs PY], ABS ( [Prior Year] ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 1 Base
+
+	/// Year to date, capped at the last closed month so that both sides of a comparison cover the same months.
+	measure 'Actual YTD' = CALCULATE ( [Actual], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	/// Budget for the same closed months as Actual YTD.
+	measure 'Budget YTD' = CALCULATE ( [Budget], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	measure 'Prior Year YTD' = CALCULATE ( [Prior Year], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	measure 'Actual at Budget FX YTD' = CALCULATE ( [Actual at Budget FX], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	measure 'FX Effect YTD' = [Actual YTD] - [Actual at Budget FX YTD]
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	measure 'Var vs Budget YTD' = IF ( NOT ISBLANK ( [Actual YTD] ), [Actual YTD] - [Budget YTD] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	measure 'Var vs Budget YTD %' = DIVIDE ( [Var vs Budget YTD], ABS ( [Budget YTD] ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 2 YTD and full year
+
+	measure 'Var vs PY YTD %' = DIVIDE ( [Actual YTD] - [Prior Year YTD], ABS ( [Prior Year YTD] ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 2 YTD and full year
+
+	/// Twelve-month budget of the latest year in context.
+	measure 'Full Year Budget' =
+			VAR _Year = MAX ( dim_date[fiscal_year] )
+			RETURN
+				CALCULATE ( [Budget], REMOVEFILTERS ( dim_date ), dim_date[fiscal_year] = _Year )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	/// Twelve-month landing: actual Jan to Sep plus reforecast Oct to Dec.
+	measure 'Full Year Forecast' =
+			VAR _Year = MAX ( dim_date[fiscal_year] )
+			RETURN
+				CALCULATE ( [Forecast 9+3], REMOVEFILTERS ( dim_date ), dim_date[fiscal_year] = _Year )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	measure 'Full Year Forecast vs Budget' = [Full Year Forecast] - [Full Year Budget]
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 2 YTD and full year
+
+	measure 'Full Year Forecast vs Budget %' = DIVIDE ( [Full Year Forecast vs Budget], ABS ( [Full Year Budget] ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 2 YTD and full year
+
+	measure 'Net Revenue' = CALCULATE ( [Actual], dim_account[pnl_group] = "Net revenue" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Net Revenue Budget' = CALCULATE ( [Budget], dim_account[pnl_group] = "Net revenue" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Net Revenue YTD' = CALCULATE ( [Actual YTD], dim_account[pnl_group] = "Net revenue" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Net Revenue Budget YTD' = CALCULATE ( [Budget YTD], dim_account[pnl_group] = "Net revenue" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Net Revenue Var vs Budget YTD %' = CALCULATE ( [Var vs Budget YTD %], dim_account[pnl_group] = "Net revenue" )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 3 KPIs
+
+	measure 'Net Revenue Var vs PY YTD %' = CALCULATE ( [Var vs PY YTD %], dim_account[pnl_group] = "Net revenue" )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 3 KPIs
+
+	measure 'Net Revenue FX Effect YTD' = CALCULATE ( [FX Effect YTD], dim_account[pnl_group] = "Net revenue" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	/// Net revenue plus cost of sales (all accounts with pnl_subtotal Gross margin).
+	measure 'Gross Margin' = CALCULATE ( [Actual], dim_account[pnl_subtotal] = "Gross margin" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Gross Margin Budget' = CALCULATE ( [Budget], dim_account[pnl_subtotal] = "Gross margin" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Gross Margin %' = DIVIDE ( [Gross Margin], [Net Revenue] )
+		formatString: 0.0%
+		displayFolder: 3 KPIs
+
+	measure 'Gross Margin % Budget' = DIVIDE ( [Gross Margin Budget], [Net Revenue Budget] )
+		formatString: 0.0%
+		displayFolder: 3 KPIs
+
+	measure 'Gross Margin YTD' = CALCULATE ( [Actual YTD], dim_account[pnl_subtotal] = "Gross margin" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Gross Margin Budget YTD' = CALCULATE ( [Budget YTD], dim_account[pnl_subtotal] = "Gross margin" )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Gross Margin % YTD' = DIVIDE ( [Gross Margin YTD], [Net Revenue YTD] )
+		formatString: 0.0%
+		displayFolder: 3 KPIs
+
+	measure 'Gross Margin % Budget YTD' = DIVIDE ( [Gross Margin Budget YTD], [Net Revenue Budget YTD] )
+		formatString: 0.0%
+		displayFolder: 3 KPIs
+
+	/// Gross margin plus the opex groups (People, Facilities, IT, Commercial, General and admin).
+	measure 'EBITDA' = CALCULATE ( [Actual], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'EBITDA Budget' = CALCULATE ( [Budget], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'EBITDA %' = DIVIDE ( [EBITDA], [Net Revenue] )
+		formatString: 0.0%
+		displayFolder: 3 KPIs
+
+	measure 'EBITDA Forecast 9+3' = CALCULATE ( [Forecast 9+3], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'EBITDA YTD' = CALCULATE ( [Actual YTD], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'EBITDA Budget YTD' = CALCULATE ( [Budget YTD], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'EBITDA Var vs Budget YTD' = [EBITDA YTD] - [EBITDA Budget YTD]
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'EBITDA % YTD' = DIVIDE ( [EBITDA YTD], [Net Revenue YTD] )
+		formatString: 0.0%
+		displayFolder: 3 KPIs
+
+	measure 'EBITDA FX Effect YTD' = CALCULATE ( [FX Effect YTD], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Full Year Forecast EBITDA' = CALCULATE ( [Full Year Forecast], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	measure 'Full Year Budget EBITDA' = CALCULATE ( [Full Year Budget], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	/// EBITDA plus depreciation and amortisation.
+	measure 'EBIT' = CALCULATE ( [Actual], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA", "EBIT" } )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 3 KPIs
+
+	/// [Actual] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Actual' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Actual], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Actual], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// [Budget] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Budget' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Budget], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Budget], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// [Forecast 9+3] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Forecast 9+3' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Forecast 9+3], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Forecast 9+3], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// [Prior Year] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Prior Year' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Prior Year], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Prior Year], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// [Actual YTD] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Actual YTD' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Actual YTD], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Actual YTD], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// [Budget YTD] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Budget YTD' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Budget YTD], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Budget YTD], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// [Prior Year YTD] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Prior Year YTD' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Prior Year YTD], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Prior Year YTD], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// [Full Year Budget] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Full Year Budget' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Full Year Budget], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Full Year Budget], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// [Full Year Forecast] for one row of pnl_layout: a P&L group, or a cumulative subtotal (all accounts up to max_line_order).
+	measure 'PL Full Year Forecast' =
+			VAR _Type = SELECTEDVALUE ( pnl_layout[line_type] )
+			VAR _Group = SELECTEDVALUE ( pnl_layout[pnl_group] )
+			VAR _MaxOrder = SELECTEDVALUE ( pnl_layout[max_line_order] )
+			RETURN
+				SWITCH (
+					_Type,
+					"Group", CALCULATE ( [Full Year Forecast], dim_account[pnl_group] = _Group ),
+					"Subtotal", CALCULATE ( [Full Year Forecast], dim_account[pnl_line_order] <= _MaxOrder ),
+					BLANK ()
+				)
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	measure 'PL Var vs Budget' = IF ( NOT ISBLANK ( [PL Actual] ), [PL Actual] - [PL Budget] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	measure 'PL Var vs Budget %' = DIVIDE ( [PL Var vs Budget], ABS ( [PL Budget] ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 4 P&L matrix
+
+	measure 'PL Var vs PY %' = IF ( NOT ISBLANK ( [PL Actual] ), DIVIDE ( [PL Actual] - [PL Prior Year], ABS ( [PL Prior Year] ) ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 4 P&L matrix
+
+	measure 'PL Var vs Budget YTD' = IF ( NOT ISBLANK ( [PL Actual YTD] ), [PL Actual YTD] - [PL Budget YTD] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	measure 'PL Var vs Budget YTD %' = DIVIDE ( [PL Var vs Budget YTD], ABS ( [PL Budget YTD] ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 4 P&L matrix
+
+	measure 'PL Var vs PY YTD %' = IF ( NOT ISBLANK ( [PL Actual YTD] ), DIVIDE ( [PL Actual YTD] - [PL Prior Year YTD], ABS ( [PL Prior Year YTD] ) ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 4 P&L matrix
+
+	measure 'PL FY Forecast vs Budget' = [PL Full Year Forecast] - [PL Full Year Budget]
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 4 P&L matrix
+
+	/// Each line as a share of net revenue: the Gross margin row is the gross margin %, the EBITDA row the EBITDA %.
+	measure 'PL % of Net Revenue' = IF ( NOT ISBLANK ( [PL Actual] ), DIVIDE ( [PL Actual], [Net Revenue] ) )
+		formatString: 0.0%
+		displayFolder: 4 P&L matrix
+
+	measure 'PL % of Net Revenue YTD' = IF ( NOT ISBLANK ( [PL Actual YTD] ), DIVIDE ( [PL Actual YTD], [Net Revenue YTD] ) )
+		formatString: 0.0%
+		displayFolder: 4 P&L matrix
+
+	/// Not called Units: fct_sales_volume has a units column and names are case-insensitive.
+	measure 'Units Actual' = CALCULATE ( SUM ( fct_sales_volume[units] ), fct_sales_volume[scenario] = "ACT" )
+		formatString: #,0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Units Budget' =
+			SUMX (
+				VALUES ( dim_date[fiscal_year] ),
+				VAR _Scenario = "BUD" & dim_date[fiscal_year]
+				RETURN
+					CALCULATE ( SUM ( fct_sales_volume[units] ), fct_sales_volume[scenario] = _Scenario )
+			)
+		formatString: #,0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Units Var vs Budget %' = IF ( NOT ISBLANK ( [Units Actual] ), DIVIDE ( [Units Actual] - [Units Budget], [Units Budget] ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Units Actual YTD' = CALCULATE ( [Units Actual], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+		formatString: #,0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Units Budget YTD' = CALCULATE ( [Units Budget], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+		formatString: #,0
+		displayFolder: 5 Volume and margin PVM
+
+	/// Sales minus cost of materials, budget, Jan to Sep 2026 (mart_margin_pvm is YTD by construction).
+	measure 'Product Margin Budget' = SUM ( mart_margin_pvm[budget_margin_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Product Margin Actual' = SUM ( mart_margin_pvm[actual_margin_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 5 Volume and margin PVM
+
+	/// Equals Volume + Mix + Price + Unit Cost + Margin FX Effect.
+	measure 'Product Margin Var' = [Product Margin Actual] - [Product Margin Budget]
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Volume Effect' = SUM ( mart_margin_pvm[volume_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Mix Effect' = SUM ( mart_margin_pvm[mix_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Price Effect' = SUM ( mart_margin_pvm[price_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Unit Cost Effect' = SUM ( mart_margin_pvm[cost_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 5 Volume and margin PVM
+
+	measure 'Margin FX Effect' = SUM ( mart_margin_pvm[fx_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 5 Volume and margin PVM
+
+	/// EBITDA bridge budget to actual, YTD Sep 2026. Exclude step Actual EBITDA in the waterfall and let the visual show the total.
+	measure 'Bridge Amount' = SUM ( mart_ebitda_bridge[amount_eur] )
+		formatString: \€#,0;-\€#,0;\€0
+		displayFolder: 6 Bridge and checks
+
+	measure 'Journal Exceptions' = COUNTROWS ( mart_journal_checks )
+		formatString: 0
+		displayFolder: 6 Bridge and checks
+
+	measure 'Duplicate Invoices' = CALCULATE ( COUNTROWS ( mart_journal_checks ), mart_journal_checks[check_type] = "duplicate_invoice" )
+		formatString: 0
+		displayFolder: 6 Bridge and checks
+
+	measure 'Exception Amount LC' = SUM ( mart_journal_checks[amount_lc] )
+		formatString: #,0
+		displayFolder: 6 Bridge and checks
+
+	column measure_group
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: measure_group
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+					Source = #table ( type table [measure_group = text], { { "Measures" } } )
+				in
+					Source

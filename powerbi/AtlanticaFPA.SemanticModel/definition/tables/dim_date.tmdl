@@ -1,0 +1,52 @@
+table dim_date
+	dataCategory: Time
+
+	column date_day
+		dataType: dateTime
+		isKey
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: date_day
+
+	column month_start
+		dataType: dateTime
+		formatString: mmm yyyy
+		summarizeBy: none
+		sourceColumn: month_start
+
+	column fiscal_year
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: fiscal_year
+
+	column fiscal_quarter
+		dataType: string
+		summarizeBy: none
+		sourceColumn: fiscal_quarter
+
+	column month_number
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: month_number
+
+	column month_name
+		dataType: string
+		summarizeBy: none
+		sortByColumn: month_number
+		sourceColumn: month_name
+
+	column is_closed
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_closed
+
+	partition dim_date = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "dim_date.parquet" ) )
+				in
+					Source

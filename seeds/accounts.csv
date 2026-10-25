@@ -1,0 +1,23 @@
+account_id,account_name,account_type,pnl_group,pnl_subtotal,pnl_line_order
+4000,Product sales,P&L,Net revenue,Gross margin,10
+4100,Service revenue,P&L,Net revenue,Gross margin,11
+4900,Discounts and rebates,P&L,Net revenue,Gross margin,12
+5000,Cost of materials,P&L,Cost of sales,Gross margin,20
+5100,Inbound freight,P&L,Cost of sales,Gross margin,21
+5200,Outbound freight,P&L,Cost of sales,Gross margin,22
+6000,Salaries,P&L,People,EBITDA,30
+6010,Social security,P&L,People,EBITDA,31
+6020,Bonuses,P&L,People,EBITDA,32
+6100,Rent and facilities,P&L,Facilities,EBITDA,40
+6200,Software and IT services,P&L,IT,EBITDA,41
+6300,Travel,P&L,Commercial,EBITDA,42
+6400,Marketing,P&L,Commercial,EBITDA,43
+6500,Professional fees,P&L,General and admin,EBITDA,44
+6600,Other operating costs,P&L,General and admin,EBITDA,45
+7000,Depreciation and amortisation,P&L,D&A,EBIT,50
+1100,Accounts receivable,Balance sheet,,,
+1300,Inventory,Balance sheet,,,
+1500,Accumulated depreciation,Balance sheet,,,
+2100,Accounts payable,Balance sheet,,,
+2200,Accrued expenses,Balance sheet,,,
+2300,Payroll liabilities,Balance sheet,,,

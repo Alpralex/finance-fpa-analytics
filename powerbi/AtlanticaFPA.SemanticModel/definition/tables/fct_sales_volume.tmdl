@@ -1,0 +1,61 @@
+table fct_sales_volume
+
+	column scenario
+		dataType: string
+		summarizeBy: none
+		sourceColumn: scenario
+
+	column entity_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	column product_line_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: product_line_id
+
+	column month_start
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: month_start
+
+	column units
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: units
+
+	column revenue_lc
+		dataType: double
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: revenue_lc
+
+	column revenue_eur
+		dataType: double
+		isHidden
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: revenue_eur
+
+	column revenue_eur_bud_rate
+		dataType: double
+		isHidden
+		formatString: \€#,0;-\€#,0;\€0
+		summarizeBy: sum
+		sourceColumn: revenue_eur_bud_rate
+
+	partition fct_sales_volume = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "fct_sales_volume.parquet" ) )
+				in
+					Source

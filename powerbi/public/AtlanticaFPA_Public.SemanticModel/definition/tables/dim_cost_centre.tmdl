@@ -1,0 +1,30 @@
+table dim_cost_centre
+	lineageTag: cdf746d5-0223-46ba-8560-a76c509911c2
+
+	column cost_centre_id
+		dataType: string
+		isKey
+		lineageTag: 89f96284-48a1-4f01-a707-415e5306ad54
+		summarizeBy: none
+		sourceColumn: cost_centre_id
+
+	column cost_centre_name
+		dataType: string
+		lineageTag: 2a743e61-eb42-44b7-933f-e6a076068c90
+		summarizeBy: none
+		sourceColumn: cost_centre_name
+
+	column function_group
+		dataType: string
+		lineageTag: 34c4e838-6653-434b-91d7-4da708a01bc0
+		summarizeBy: none
+		sourceColumn: function_group
+
+	partition dim_cost_centre = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "dim_cost_centre.parquet" ) )
+				in
+					Source
+

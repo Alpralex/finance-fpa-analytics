@@ -1,0 +1,123 @@
+table mart_margin_pvm
+	lineageTag: a72fc448-0735-4523-88d9-e90c792e006e
+
+	column entity_id
+		dataType: string
+		isHidden
+		lineageTag: 1be2226d-0fb3-4798-9238-c0b4df956d27
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	column product_line_id
+		dataType: string
+		isHidden
+		lineageTag: eef47b67-d054-49be-9a4f-94683251f7c6
+		summarizeBy: none
+		sourceColumn: product_line_id
+
+	column act_units
+		dataType: double
+		formatString: #,0
+		lineageTag: 8676d79b-e5fb-493c-b513-99db46bd89e3
+		summarizeBy: sum
+		sourceColumn: act_units
+
+	column bud_units
+		dataType: double
+		formatString: #,0
+		lineageTag: f0083030-84c8-401f-9e86-1563f9b9aa45
+		summarizeBy: sum
+		sourceColumn: bud_units
+
+	column budget_sales_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 6080ba72-80f1-41d9-a6bf-c234dc2587fa
+		summarizeBy: sum
+		sourceColumn: budget_sales_eur
+
+	column actual_sales_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 3292f4e1-acb9-4148-8d88-c3f4db55a81f
+		summarizeBy: sum
+		sourceColumn: actual_sales_eur
+
+	column budget_margin_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: aa771af0-7a3a-4995-9db0-4dc13ab1b4db
+		summarizeBy: sum
+		sourceColumn: budget_margin_eur
+
+	column actual_margin_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: ba02a69f-049e-4fbf-8615-9de99421561c
+		summarizeBy: sum
+		sourceColumn: actual_margin_eur
+
+	column sales_volume_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: b19e4361-529f-4699-ba2e-ee09840038a7
+		summarizeBy: sum
+		sourceColumn: sales_volume_eur
+
+	column sales_price_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: ca141092-d2fd-4b55-bd13-9e6afaf02620
+		summarizeBy: sum
+		sourceColumn: sales_price_eur
+
+	column sales_fx_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 9a8bcda7-494e-4f44-bacf-22d7049f7c9d
+		summarizeBy: sum
+		sourceColumn: sales_fx_eur
+
+	column volume_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 3948df6a-4a26-4e92-9c39-a2eca35d7c94
+		summarizeBy: sum
+		sourceColumn: volume_eur
+
+	column mix_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: fd89d7c9-7d34-468d-b65f-895480661113
+		summarizeBy: sum
+		sourceColumn: mix_eur
+
+	column price_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 435fe3d8-bfbc-4dd7-bf4d-ba8d9981fdfc
+		summarizeBy: sum
+		sourceColumn: price_eur
+
+	column cost_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: ce5fbdb2-af59-46be-a45a-f8826dba45da
+		summarizeBy: sum
+		sourceColumn: cost_eur
+
+	column fx_eur
+		dataType: double
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 9eb2146e-b070-48c4-9c2a-3506bc2764a3
+		summarizeBy: sum
+		sourceColumn: fx_eur
+
+	partition mart_margin_pvm = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "mart_margin_pvm.parquet" ) )
+				in
+					Source
+

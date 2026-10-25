@@ -1,0 +1,72 @@
+/// Disconnected P&L layout: one row per matrix line. Group rows filter dim_account[pnl_group]; subtotal rows sum every account up to max_line_order (Gross margin 29, EBITDA 49, EBIT 99).
+table pnl_layout
+	lineageTag: 67537927-3cb3-4b3b-969a-55816eef6bcb
+
+	column line_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 415ac38d-70a3-49b0-8dcc-6bb85d9b6141
+		summarizeBy: none
+		sourceColumn: line_order
+
+	column line_label
+		dataType: string
+		lineageTag: f60d2796-6315-4e8b-ae49-cbb2d25c4213
+		summarizeBy: none
+		sourceColumn: line_label
+		sortByColumn: line_order
+
+	column line_type
+		dataType: string
+		isHidden
+		lineageTag: 531601e5-c27f-4b74-9f4a-edd0b0f39e60
+		summarizeBy: none
+		sourceColumn: line_type
+
+	column pnl_group
+		dataType: string
+		isHidden
+		lineageTag: 1bc5ec9e-3cfb-45fa-b66e-c12d44b036e0
+		summarizeBy: none
+		sourceColumn: pnl_group
+
+	column max_line_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 92c0de4f-6a6f-4bd8-9136-82ef659a6264
+		summarizeBy: none
+		sourceColumn: max_line_order
+
+	column is_subtotal
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 375bfab2-7e2e-43e6-a105-92e701aba61a
+		summarizeBy: none
+		sourceColumn: is_subtotal
+
+	partition pnl_layout = m
+		mode: import
+		source =
+				let
+					Source = #table (
+						type table [line_order = Int64.Type, line_label = text, line_type = text, pnl_group = text, max_line_order = Int64.Type, is_subtotal = Int64.Type],
+						{
+							{1, "Net revenue", "Group", "Net revenue", null, 0},
+							{2, "Cost of sales", "Group", "Cost of sales", null, 0},
+							{3, "Gross margin", "Subtotal", null, 29, 1},
+							{4, "People", "Group", "People", null, 0},
+							{5, "Facilities", "Group", "Facilities", null, 0},
+							{6, "IT", "Group", "IT", null, 0},
+							{7, "Commercial", "Group", "Commercial", null, 0},
+							{8, "General and admin", "Group", "General and admin", null, 0},
+							{9, "EBITDA", "Subtotal", null, 49, 1},
+							{10, "D&A", "Group", "D&A", null, 0},
+							{11, "EBIT", "Subtotal", null, 99, 1}
+						}
+					)
+				in
+					Source
+

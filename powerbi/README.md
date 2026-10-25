@@ -1,5 +1,7 @@
 # Atlântica FP&A in Power BI
 
+**Live report (Publish to web):** https://app.powerbi.com/view?r=eyJrIjoiMjMwNTVhNGYtMmYzNi00ZmMwLTg3NTUtNjNhN2NiMjQzODhlIiwidCI6IjY2MDMwOWU1LWI1YWEtNDQzNS1iMDU2LTJhYmViOGZmNDZjNyJ9 (published from the public copy without RLS, see below).
+
 The budget-vs-actual model as a Power BI project (PBIP). The semantic model is written in TMDL, so every
 table, relationship, measure and security role is readable in Git. The data are the Parquet files that
 `scripts/export.py` writes to `powerbi/data/` (the same files the Qlik app loads).

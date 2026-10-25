@@ -24,6 +24,5 @@ ref table mart_margin_pvm
 ref table mart_ebitda_bridge
 ref table mart_journal_checks
 
-
 ref cultureInfo en-US
 

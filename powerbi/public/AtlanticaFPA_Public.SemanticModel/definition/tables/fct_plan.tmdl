@@ -1,0 +1,77 @@
+table fct_plan
+	lineageTag: ea6bec2b-0242-4909-af61-e13beac852f9
+
+	column scenario
+		dataType: string
+		lineageTag: ae527678-1223-4e27-b18b-5f47769be8c0
+		summarizeBy: none
+		sourceColumn: scenario
+
+	column entity_id
+		dataType: string
+		isHidden
+		lineageTag: 54b923a1-72b1-4b71-8c20-c19cf474ffc5
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	column cost_centre_id
+		dataType: string
+		isHidden
+		lineageTag: 94a2016c-f51a-43b5-a632-923ca3f2bbae
+		summarizeBy: none
+		sourceColumn: cost_centre_id
+
+	column account_id
+		dataType: string
+		isHidden
+		lineageTag: e631bc41-40bf-4f8e-a200-13f5e804bdfc
+		summarizeBy: none
+		sourceColumn: account_id
+
+	column product_line_id
+		dataType: string
+		isHidden
+		lineageTag: 0aa2deb5-51df-4965-91ce-2f551905f524
+		summarizeBy: none
+		sourceColumn: product_line_id
+
+	column month_start
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 78e5948b-8101-4166-baa0-1e8f371ca5de
+		summarizeBy: none
+		sourceColumn: month_start
+
+	column amount_lc
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: 52b72294-418a-44f2-bf75-d2b95e175a84
+		summarizeBy: none
+		sourceColumn: amount_lc
+
+	column amount_eur
+		dataType: double
+		isHidden
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 81d6d545-e27c-4541-a846-e9cc9e74441b
+		summarizeBy: sum
+		sourceColumn: amount_eur
+
+	column amount_eur_bud_rate
+		dataType: double
+		isHidden
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: dfc68496-692b-4c18-9788-2deb59a932e3
+		summarizeBy: sum
+		sourceColumn: amount_eur_bud_rate
+
+	partition fct_plan = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "fct_plan.parquet" ) )
+				in
+					Source
+

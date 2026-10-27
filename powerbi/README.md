@@ -1,5 +1,7 @@
 # Atlântica FP&A in Power BI
 
+**Live report (Publish to web):** https://app.powerbi.com/view?r=eyJrIjoiMjMwNTVhNGYtMmYzNi00ZmMwLTg3NTUtNjNhN2NiMjQzODhlIiwidCI6IjY2MDMwOWU1LWI1YWEtNDQzNS1iMDU2LTJhYmViOGZmNDZjNyJ9 (published from the public copy without RLS, see below).
+
 The budget-vs-actual model as a Power BI project (PBIP). The semantic model is written in TMDL, so every
 table, relationship, measure and security role is readable in Git. The data are the Parquet files that
 `scripts/export.py` writes to `powerbi/data/` (the same files the Qlik app loads).
@@ -132,6 +134,14 @@ Test it in Desktop with *Modeling > View as*, tick **Other user**, type one of t
 | anyone else | nothing | blank |
 
 After publishing, add members to the roles in the Fabric workspace (dataset *Security*).
+
+### Public copy without RLS
+
+*Publish to web* does not accept a model with row-level security, so the public link on the portfolio comes from
+`public/AtlanticaFPA_Public.pbip`: the same report, data and measures without the two roles and without
+`security_entity_access`, which only serves them. It is generated, not edited: after changing the report or the model run
+`node scripts/build_powerbi_report.mjs` and then `node scripts/make_powerbi_public_copy.mjs`. Publish the main project for
+the RLS demonstration and this copy for the public link.
 
 ## Report to build (four pages, 1280 × 720)
 

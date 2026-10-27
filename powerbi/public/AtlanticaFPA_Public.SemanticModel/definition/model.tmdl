@@ -1,0 +1,28 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["DataFolder","_Measures","dim_date","dim_entity","dim_account","dim_cost_centre","dim_product_line","pnl_layout","fct_actuals","fct_plan","fct_sales_volume","mart_margin_pvm","mart_ebitda_bridge","mart_journal_checks"]
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+ref table _Measures
+ref table dim_date
+ref table dim_entity
+ref table dim_account
+ref table dim_cost_centre
+ref table dim_product_line
+ref table pnl_layout
+ref table fct_actuals
+ref table fct_plan
+ref table fct_sales_volume
+ref table mart_margin_pvm
+ref table mart_ebitda_bridge
+ref table mart_journal_checks
+
+ref cultureInfo en-US
+

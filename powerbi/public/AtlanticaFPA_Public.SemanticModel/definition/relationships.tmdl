@@ -1,0 +1,76 @@
+relationship fct_actuals_date
+	fromColumn: fct_actuals.month_start
+	toColumn: dim_date.date_day
+
+relationship fct_actuals_entity
+	fromColumn: fct_actuals.entity_id
+	toColumn: dim_entity.entity_id
+
+relationship fct_actuals_cost_centre
+	fromColumn: fct_actuals.cost_centre_id
+	toColumn: dim_cost_centre.cost_centre_id
+
+relationship fct_actuals_account
+	fromColumn: fct_actuals.account_id
+	toColumn: dim_account.account_id
+
+relationship fct_actuals_product_line
+	fromColumn: fct_actuals.product_line_id
+	toColumn: dim_product_line.product_line_id
+
+relationship fct_plan_date
+	fromColumn: fct_plan.month_start
+	toColumn: dim_date.date_day
+
+relationship fct_plan_entity
+	fromColumn: fct_plan.entity_id
+	toColumn: dim_entity.entity_id
+
+relationship fct_plan_cost_centre
+	fromColumn: fct_plan.cost_centre_id
+	toColumn: dim_cost_centre.cost_centre_id
+
+relationship fct_plan_account
+	fromColumn: fct_plan.account_id
+	toColumn: dim_account.account_id
+
+relationship fct_plan_product_line
+	fromColumn: fct_plan.product_line_id
+	toColumn: dim_product_line.product_line_id
+
+relationship fct_sales_volume_date
+	fromColumn: fct_sales_volume.month_start
+	toColumn: dim_date.date_day
+
+relationship fct_sales_volume_entity
+	fromColumn: fct_sales_volume.entity_id
+	toColumn: dim_entity.entity_id
+
+relationship fct_sales_volume_product_line
+	fromColumn: fct_sales_volume.product_line_id
+	toColumn: dim_product_line.product_line_id
+
+relationship mart_margin_pvm_entity
+	fromColumn: mart_margin_pvm.entity_id
+	toColumn: dim_entity.entity_id
+
+relationship mart_margin_pvm_product_line
+	fromColumn: mart_margin_pvm.product_line_id
+	toColumn: dim_product_line.product_line_id
+
+relationship mart_ebitda_bridge_entity
+	fromColumn: mart_ebitda_bridge.entity_id
+	toColumn: dim_entity.entity_id
+
+relationship mart_journal_checks_date
+	fromColumn: mart_journal_checks.month_start
+	toColumn: dim_date.date_day
+
+relationship mart_journal_checks_entity
+	fromColumn: mart_journal_checks.entity_id
+	toColumn: dim_entity.entity_id
+
+relationship mart_journal_checks_account
+	fromColumn: mart_journal_checks.account_id
+	toColumn: dim_account.account_id
+

@@ -1,29 +1,35 @@
 table dim_entity
+	lineageTag: 791f671a-c52e-4ce8-97fa-c176ae86f286
 
 	column entity_id
 		dataType: string
 		isKey
+		lineageTag: 0683dd4c-7ea2-408f-85f2-262a452daa9b
 		summarizeBy: none
 		sourceColumn: entity_id
 
 	column entity_name
 		dataType: string
+		lineageTag: 791e9825-d596-40c6-89ae-488e21e45b35
 		summarizeBy: none
-		sortByColumn: sort_order
 		sourceColumn: entity_name
+		sortByColumn: sort_order
 
 	column country
 		dataType: string
+		lineageTag: 3c768479-d451-49b7-91e8-ffe5c9fd7c55
 		summarizeBy: none
 		sourceColumn: country
 
 	column currency
 		dataType: string
+		lineageTag: c21f3a3e-8fbf-4eed-b492-3ca83a917f62
 		summarizeBy: none
 		sourceColumn: currency
 
 	column region
 		dataType: string
+		lineageTag: 4d082970-3efb-4dea-813b-201a1059fc39
 		summarizeBy: none
 		sourceColumn: region
 
@@ -31,6 +37,7 @@ table dim_entity
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 4befad8b-656f-47f0-bc5c-65ac07caecb6
 		summarizeBy: none
 		sourceColumn: sort_order
 
@@ -41,3 +48,4 @@ table dim_entity
 					Source = Parquet.Document ( File.Contents ( DataFolder & "dim_entity.parquet" ) )
 				in
 					Source
+

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "AtlanticaFPA"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "c679eb45-5320-412f-ac1d-e2c6f1a25d16"
+  }
+}

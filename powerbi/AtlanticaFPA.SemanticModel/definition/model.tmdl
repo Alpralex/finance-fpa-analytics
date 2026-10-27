@@ -6,7 +6,9 @@ model Model
 		legacyRedirects
 		returnErrorValuesAsNull
 
-	annotation PBI_QueryOrder = ["DataFolder","_Measures","dim_date","dim_entity","dim_account","dim_cost_centre","dim_product_line","pnl_layout","fct_actuals","fct_plan","fct_sales_volume","mart_margin_pvm","mart_ebitda_bridge","mart_journal_checks","security_entity_access"]
+annotation PBI_QueryOrder = ["DataFolder","_Measures","dim_date","dim_entity","dim_account","dim_cost_centre","dim_product_line","pnl_layout","fct_actuals","fct_plan","fct_sales_volume","mart_margin_pvm","mart_ebitda_bridge","mart_journal_checks","security_entity_access"]
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
 
 ref table _Measures
 ref table dim_date
@@ -25,3 +27,6 @@ ref table security_entity_access
 
 ref role 'Entity controller'
 ref role 'Group finance'
+
+ref cultureInfo en-US
+

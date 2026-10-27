@@ -73,3 +73,4 @@ relationship mart_journal_checks_entity
 relationship mart_journal_checks_account
 	fromColumn: mart_journal_checks.account_id
 	toColumn: dim_account.account_id
+

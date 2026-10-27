@@ -1,0 +1,293 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "name": "12a09c1b64ea3d439387",
+  "position": {
+    "x": 264,
+    "y": 456,
+    "z": 5000,
+    "height": 248,
+    "width": 1000,
+    "tabOrder": 5000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_journal_checks"
+                    }
+                  },
+                  "Property": "check_type"
+                }
+              },
+              "queryRef": "mart_journal_checks.check_type",
+              "nativeQueryRef": "check_type",
+              "displayName": "Check"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_entity"
+                    }
+                  },
+                  "Property": "entity_id"
+                }
+              },
+              "queryRef": "dim_entity.entity_id",
+              "nativeQueryRef": "entity_id",
+              "displayName": "Entity"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_account"
+                    }
+                  },
+                  "Property": "account_name"
+                }
+              },
+              "queryRef": "dim_account.account_name",
+              "nativeQueryRef": "account_name",
+              "displayName": "Account"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_journal_checks"
+                    }
+                  },
+                  "Property": "month_start"
+                }
+              },
+              "queryRef": "mart_journal_checks.month_start",
+              "nativeQueryRef": "month_start",
+              "displayName": "Month"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_journal_checks"
+                    }
+                  },
+                  "Property": "vendor"
+                }
+              },
+              "queryRef": "mart_journal_checks.vendor",
+              "nativeQueryRef": "vendor",
+              "displayName": "Vendor"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_journal_checks"
+                    }
+                  },
+                  "Property": "document_ref"
+                }
+              },
+              "queryRef": "mart_journal_checks.document_ref",
+              "nativeQueryRef": "document_ref",
+              "displayName": "Document"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_journal_checks"
+                    }
+                  },
+                  "Property": "postings"
+                }
+              },
+              "queryRef": "mart_journal_checks.postings",
+              "nativeQueryRef": "postings",
+              "displayName": "Postings"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_journal_checks"
+                    }
+                  },
+                  "Property": "amount_lc"
+                }
+              },
+              "queryRef": "mart_journal_checks.amount_lc",
+              "nativeQueryRef": "amount_lc",
+              "displayName": "Amount (LC)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "mart_journal_checks"
+                    }
+                  },
+                  "Property": "change_vs_ly"
+                }
+              },
+              "queryRef": "mart_journal_checks.change_vs_ly",
+              "nativeQueryRef": "change_vs_ly",
+              "displayName": "Change vs LY"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "mart_journal_checks"
+                  }
+                },
+                "Property": "month_start"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "columnHeaders": [
+        {
+          "properties": {
+            "columnAdjustment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'growToFit'"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Ledger exceptions to clear before close (filtered by the year slicer)'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table of ledger exceptions: duplicate invoices and cost spikes, with entity, account, month, vendor, document, number of postings, amount in local currency and change against last year.'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

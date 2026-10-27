@@ -1,0 +1,62 @@
+table dim_account
+	lineageTag: ddc96445-43ae-4faf-ab11-08aaf17e0cdb
+
+	column account_id
+		dataType: string
+		isKey
+		lineageTag: cb7de384-25bd-4a11-97cd-d2533f2616ca
+		summarizeBy: none
+		sourceColumn: account_id
+
+	column account_name
+		dataType: string
+		lineageTag: 6815e555-4e8a-4495-8436-514171a28a61
+		summarizeBy: none
+		sourceColumn: account_name
+		sortByColumn: pnl_line_order
+
+	column pnl_group
+		dataType: string
+		lineageTag: 31138df0-d890-4a25-b695-443fd3d68271
+		summarizeBy: none
+		sourceColumn: pnl_group
+		sortByColumn: pnl_group_order
+
+	column pnl_subtotal
+		dataType: string
+		lineageTag: 463da2a0-1667-4da9-9ac8-addda22e82cc
+		summarizeBy: none
+		sourceColumn: pnl_subtotal
+
+	column pnl_line_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a5ac0fa1-015a-4b7b-96b7-6e09248e2d82
+		summarizeBy: none
+		sourceColumn: pnl_line_order
+
+	column pnl_group_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5c4cdf54-ba1f-4735-9950-fcce141f0f5b
+		summarizeBy: none
+		sourceColumn: pnl_group_order
+
+	column is_revenue
+		dataType: boolean
+		lineageTag: 31cab803-6bae-49ea-99e3-4b55691ccc50
+		summarizeBy: none
+		sourceColumn: is_revenue
+
+	partition dim_account = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "dim_account.parquet" ) ),
+					GroupOrder = [#"Net revenue" = 1, #"Cost of sales" = 2, People = 4, Facilities = 5, IT = 6, Commercial = 7, #"General and admin" = 8, #"D&A" = 10],
+					AddedGroupOrder = Table.AddColumn ( Source, "pnl_group_order", each Record.FieldOrDefault ( GroupOrder, [pnl_group], 99 ), Int64.Type )
+				in
+					AddedGroupOrder
+

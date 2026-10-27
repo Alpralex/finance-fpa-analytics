@@ -1,0 +1,71 @@
+table fct_sales_volume
+	lineageTag: d38b8864-b575-4f88-a96c-f8d08af7cdcd
+
+	column scenario
+		dataType: string
+		lineageTag: c404fc78-b994-4fcb-ab3f-67b4494ffe69
+		summarizeBy: none
+		sourceColumn: scenario
+
+	column entity_id
+		dataType: string
+		isHidden
+		lineageTag: d78dc474-0ed2-4be4-b666-8c975fb488c7
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	column product_line_id
+		dataType: string
+		isHidden
+		lineageTag: 3fcc557d-8f06-4a63-b9e5-3ae1730ea7fb
+		summarizeBy: none
+		sourceColumn: product_line_id
+
+	column month_start
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 9bd1b717-3718-4686-b123-8fdb51a53238
+		summarizeBy: none
+		sourceColumn: month_start
+
+	column units
+		dataType: int64
+		isHidden
+		formatString: #,0
+		lineageTag: 33b0bfde-1141-43ce-9857-30a0d2f43b8a
+		summarizeBy: sum
+		sourceColumn: units
+
+	column revenue_lc
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: 3180d7f5-cfb1-406a-8f4c-08a7066aeb93
+		summarizeBy: none
+		sourceColumn: revenue_lc
+
+	column revenue_eur
+		dataType: double
+		isHidden
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 85b185aa-572e-4131-ad91-241f24ef6550
+		summarizeBy: sum
+		sourceColumn: revenue_eur
+
+	column revenue_eur_bud_rate
+		dataType: double
+		isHidden
+		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: a1c4756e-382d-479b-a3eb-303600d7fac8
+		summarizeBy: sum
+		sourceColumn: revenue_eur_bud_rate
+
+	partition fct_sales_volume = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "fct_sales_volume.parquet" ) )
+				in
+					Source
+

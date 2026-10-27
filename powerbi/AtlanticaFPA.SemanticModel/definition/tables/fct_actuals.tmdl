@@ -1,26 +1,31 @@
 table fct_actuals
+	lineageTag: 5270e00c-e984-4079-a0d5-bc475d31ac73
 
 	column entity_id
 		dataType: string
 		isHidden
+		lineageTag: 7d25f2c6-7f72-4e2c-a854-3d0a95f07b76
 		summarizeBy: none
 		sourceColumn: entity_id
 
 	column cost_centre_id
 		dataType: string
 		isHidden
+		lineageTag: 92b3034a-1a0b-4443-8dee-5df5e5937ea7
 		summarizeBy: none
 		sourceColumn: cost_centre_id
 
 	column account_id
 		dataType: string
 		isHidden
+		lineageTag: e0809987-e27d-4e67-a0fa-f530f9f8d00c
 		summarizeBy: none
 		sourceColumn: account_id
 
 	column product_line_id
 		dataType: string
 		isHidden
+		lineageTag: 938ea8c9-fa22-4793-86a9-cab54fd2e221
 		summarizeBy: none
 		sourceColumn: product_line_id
 
@@ -28,6 +33,7 @@ table fct_actuals
 		dataType: dateTime
 		isHidden
 		formatString: yyyy-mm-dd
+		lineageTag: e35fb77a-532d-4bd3-a1ae-b47f114fec3d
 		summarizeBy: none
 		sourceColumn: month_start
 
@@ -35,6 +41,7 @@ table fct_actuals
 		dataType: double
 		isHidden
 		formatString: #,0
+		lineageTag: cddbd5da-9908-4862-b3bc-dbb01ee8a02c
 		summarizeBy: none
 		sourceColumn: amount_lc
 
@@ -42,6 +49,7 @@ table fct_actuals
 		dataType: double
 		isHidden
 		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 6822a94e-5cfe-4fad-a5cc-d51e2b9641e6
 		summarizeBy: sum
 		sourceColumn: amount_eur
 
@@ -49,6 +57,7 @@ table fct_actuals
 		dataType: double
 		isHidden
 		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: a8c355fd-c51d-41dc-871f-e170eb98fb8d
 		summarizeBy: sum
 		sourceColumn: amount_eur_bud_rate
 
@@ -59,3 +68,4 @@ table fct_actuals
 					Source = Parquet.Document ( File.Contents ( DataFolder & "fct_actuals.parquet" ) )
 				in
 					Source
+

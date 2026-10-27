@@ -1,8 +1,10 @@
 table mart_ebitda_bridge
+	lineageTag: a55e7b2c-0ff8-4e1d-98a5-e1dcc0b91da6
 
 	column entity_id
 		dataType: string
 		isHidden
+		lineageTag: eabecefe-695a-4e9e-a3c0-3d0ccc90c3b2
 		summarizeBy: none
 		sourceColumn: entity_id
 
@@ -10,18 +12,21 @@ table mart_ebitda_bridge
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 6ff2f274-e708-4349-81bf-42c61c102b09
 		summarizeBy: none
 		sourceColumn: step_order
 
 	column step
 		dataType: string
+		lineageTag: 68aa53ec-473a-4635-8972-5d9d96299674
 		summarizeBy: none
-		sortByColumn: step_order
 		sourceColumn: step
+		sortByColumn: step_order
 
 	column amount_eur
 		dataType: double
 		formatString: \€#,0;-\€#,0;\€0
+		lineageTag: 6bd24401-7b08-4332-8bff-98075540cbf7
 		summarizeBy: sum
 		sourceColumn: amount_eur
 
@@ -32,3 +37,4 @@ table mart_ebitda_bridge
 					Source = Parquet.Document ( File.Contents ( DataFolder & "mart_ebitda_bridge.parquet" ) )
 				in
 					Source
+

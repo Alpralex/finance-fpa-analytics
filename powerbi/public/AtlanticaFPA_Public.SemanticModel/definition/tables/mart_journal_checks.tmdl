@@ -1,0 +1,71 @@
+table mart_journal_checks
+	lineageTag: 5a23c616-8feb-49d5-b5ba-9a7987588b36
+
+	column check_type
+		dataType: string
+		lineageTag: b6e9dbb9-ca6f-4e57-9b96-28c764c32966
+		summarizeBy: none
+		sourceColumn: check_type
+
+	column entity_id
+		dataType: string
+		isHidden
+		lineageTag: 1fd0fedf-2f45-446e-824f-20e5af16dc06
+		summarizeBy: none
+		sourceColumn: entity_id
+
+	column account_id
+		dataType: string
+		isHidden
+		lineageTag: 29903194-0db6-4fad-9854-ed411868f72a
+		summarizeBy: none
+		sourceColumn: account_id
+
+	column month_start
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: e8c8ff16-174c-4b61-84d5-90ea66863c73
+		summarizeBy: none
+		sourceColumn: month_start
+
+	column vendor
+		dataType: string
+		lineageTag: c16547bf-e1ab-4548-9b5d-420b75b2abec
+		summarizeBy: none
+		sourceColumn: vendor
+
+	column document_ref
+		dataType: string
+		lineageTag: 2065a13e-6cf9-4a90-8151-fe37111cfde6
+		summarizeBy: none
+		sourceColumn: document_ref
+
+	column postings
+		dataType: int64
+		formatString: 0
+		lineageTag: f137cf76-4ee3-4544-be52-fbbbdaf9ba9b
+		summarizeBy: none
+		sourceColumn: postings
+
+	column amount_lc
+		dataType: double
+		formatString: #,0
+		lineageTag: cd26291d-9d8f-4cca-8e8d-68e893d90309
+		summarizeBy: sum
+		sourceColumn: amount_lc
+
+	column change_vs_ly
+		dataType: double
+		formatString: +0.0%;-0.0%;0.0%
+		lineageTag: ae7cc1c4-bf54-4d24-beb9-23ed94a4ab35
+		summarizeBy: none
+		sourceColumn: change_vs_ly
+
+	partition mart_journal_checks = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document ( File.Contents ( DataFolder & "mart_journal_checks.parquet" ) )
+				in
+					Source
+

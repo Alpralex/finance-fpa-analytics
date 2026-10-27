@@ -2,9 +2,9 @@
 role 'Entity controller'
 	modelPermission: read
 
-	tablePermission dim_entity = [entity_id] IN CALCULATETABLE ( VALUES ( security_entity_access[entity_id] ), security_entity_access[user_email] = USERPRINCIPALNAME () )
+	tablePermission dim_entity = dim_entity[entity_id] IN CALCULATETABLE ( VALUES ( security_entity_access[entity_id] ), security_entity_access[user_email] = USERPRINCIPALNAME () )
 
-	tablePermission security_entity_access = [user_email] = USERPRINCIPALNAME ()
+	tablePermission security_entity_access = security_entity_access[user_email] = USERPRINCIPALNAME ()
 
 	annotation PBI_Id = c9edd4e49cd9490599eb781952a74d7b
 

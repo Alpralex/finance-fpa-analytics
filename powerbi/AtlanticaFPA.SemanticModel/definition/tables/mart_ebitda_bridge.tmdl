@@ -27,7 +27,7 @@ table mart_ebitda_bridge
 		dataType: double
 		formatString: \€#,0;-\€#,0;\€0
 		lineageTag: 6bd24401-7b08-4332-8bff-98075540cbf7
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: amount_eur
 
 	partition mart_ebitda_bridge = m

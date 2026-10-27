@@ -51,7 +51,7 @@ table mart_journal_checks
 		dataType: double
 		formatString: #,0
 		lineageTag: cd26291d-9d8f-4cca-8e8d-68e893d90309
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: amount_lc
 
 	column change_vs_ly

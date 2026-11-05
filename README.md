@@ -5,7 +5,7 @@ a price-volume-mix split of product margin and the ledger exceptions to clear be
 modelled in SQL with dbt on DuckDB and tested. The same marts feed a web dashboard, a Power BI model and a Qlik Sense app.
 
 **Live dashboard:** https://guilhermerigonato.com/finance-fpa-analytics/ · **Power BI:** [`powerbi/`](powerbi/) · **Qlik Sense:** [`qlik/`](qlik/)
-**Stack:** Python (data generator), SQL, dbt, DuckDB, Power BI (PBIP/TMDL, DAX, row-level security), Qlik Sense (load script, set analysis, section access)
+**Stack:** Python (data generator), SQL, dbt, DuckDB, Power BI (PBIP/TMDL, DAX, row-level security), Qlik Sense (load script, set analysis, section access), Python notebook (pandas, Altair)
 
 ## The company
 
@@ -65,6 +65,14 @@ python scripts/export.py            # powerbi/data/*.parquet and web/data/*.json
 
 Open `web/index.html` through any static server (`python -m http.server` in `web/`).
 The Power BI and Qlik versions read the Parquet files in `powerbi/data/`; see their folders for the steps.
+
+## Python notebook
+
+[`notebooks/how_it_was_built.ipynb`](notebooks/how_it_was_built.ipynb) walks through the project in the order it was
+built: generate the ledger, run the accounting checks in pandas, model the P&L in dbt, rebuild the EBITDA bridge,
+the FX split and the controller checks in pandas with interactive Altair charts (click an entity and the monthly
+chart and the bridge follow), and reconcile every bridge step with the dbt marts to the cent. The
+[interactive version](https://guilhermerigonato.com/finance-fpa-analytics/notebook/) runs the charts.
 
 ## Files
 

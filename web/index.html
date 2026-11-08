@@ -3,53 +3,53 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: a month-end pack for a group controller. Findings first, one filter row, then the P&L, the bridge that explains it, and the items to chase before close. */
 :root {
-  --paper: #f7f8f9;
-  --sheet: #ffffff;
-  --ink: #1b2430;
-  --muted: #5d6876;
-  --rule: #dce0e5;
-  --grid: #eceff2;
-  --signal: #1f5a85;
-  --signal-soft: #e6eef5;
-  --s1: #2a78d6;
-  --s2: #eb6834;
-  --total: #5d6876;
-  --good: #1f7a35;
-  --good-soft: #e3f1e6;
-  --warn: #b25b00;
-  --warn-soft: #fbeedd;
-  --display: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
-  --serif: "IBM Plex Serif", Georgia, serif;
-  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --paper: #c4cbd2;
+  --sheet: #eef1f4;
+  --ink: #182027;
+  --muted: #3b434b;
+  --rule: #a1a9af;
+  --grid: #d9dee3;
+  --signal: #970d63;
+  --signal-soft: #f1dce6;
+  --s1: #3d5a73;
+  --s2: #970d63;
+  --total: #6e767d;
+  --good: #1f6b3a;
+  --good-soft: #d3e6d9;
+  --warn: #b42318;
+  --warn-soft: #f2d9d5;
+  --display: "Hanken Grotesk", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --serif: "Newsreader", Georgia, serif;
+  --body: "Newsreader", Georgia, serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #121519; --sheet: #181c21; --ink: #e3e7eb; --muted: #97a2ad; --rule: #2a3038; --grid: #20252c;
-    --signal: #86b6da; --signal-soft: #1a2633;
-    --s1: #3987e5; --s2: #d95926; --total: #8a95a1;
-    --good: #5cb873; --good-soft: #17301e; --warn: #e09a4a; --warn-soft: #3a2812;
+    --paper: #13171b; --sheet: #1b2026; --ink: #e3e7eb; --muted: #9aa4ae; --rule: #333b44; --grid: #242a31;
+    --signal: #e07ab0; --signal-soft: #3a1f2e;
+    --s1: #8fb0cc; --s2: #e07ab0; --total: #8a939b;
+    --good: #6cc08a; --good-soft: #1a3324; --warn: #f08a7e; --warn-soft: #3d1f1c;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #121519; --sheet: #181c21; --ink: #e3e7eb; --muted: #97a2ad; --rule: #2a3038; --grid: #20252c;
-  --signal: #86b6da; --signal-soft: #1a2633;
-  --s1: #3987e5; --s2: #d95926; --total: #8a95a1;
-  --good: #5cb873; --good-soft: #17301e; --warn: #e09a4a; --warn-soft: #3a2812;
+  --paper: #13171b; --sheet: #1b2026; --ink: #e3e7eb; --muted: #9aa4ae; --rule: #333b44; --grid: #242a31;
+    --signal: #e07ab0; --signal-soft: #3a1f2e;
+    --s1: #8fb0cc; --s2: #e07ab0; --total: #8a939b;
+    --good: #6cc08a; --good-soft: #1a3324; --warn: #f08a7e; --warn-soft: #3d1f1c;
   color-scheme: dark;
 }
 body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 1rem; line-height: 1.55; margin: 0; }
 .wrap { max-width: 72rem; margin: 0 auto; padding-block: 2.5rem 4rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 2rem; }
 h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.15; text-wrap: balance; }
-h1 { font-family: var(--serif); font-size: clamp(1.8rem, 4.2vw, 2.5rem); font-weight: 600; }
+h1 { font-family: var(--display); font-size: clamp(1.8rem, 4.2vw, 2.6rem); font-weight: 600; letter-spacing: -0.02em; padding-bottom: .5rem; border-bottom: 2px solid var(--ink); }
 h2 { font-size: 1.05rem; font-weight: 600; }
 p { margin: 0; max-width: 68ch; }
-.label { font-size: 0.88rem; color: var(--muted); }
+.label { font-size: 0.88rem; color: var(--muted); font-family: var(--display); }
 .crumb { font-size: 0.9rem; }
 a { color: var(--signal); text-underline-offset: 3px; }
 header { display: grid; gap: 0.75rem; }
@@ -57,29 +57,29 @@ header { display: grid; gap: 0.75rem; }
 
 .findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
 .finding { border-top: 1px solid var(--ink); padding-top: 0.75rem; display: grid; gap: 0.35rem; align-content: start; min-width: 0; }
-.finding b { font-weight: 600; font-size: 1rem; }
+.finding b { font-family: var(--display); font-weight: 600; font-size: 1rem; }
 
 .filters { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: center; padding: 0.75rem 0; border-block: 1px solid var(--rule); position: sticky; top: env(safe-area-inset-top, 0px); background: var(--paper); z-index: 5; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
 .filters .grp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
-.seg button { font-family: var(--body); font-size: 0.88rem; padding: 0.35rem 0.7rem; background: var(--sheet); color: var(--ink); border: 0; border-right: 1px solid var(--rule); cursor: pointer; }
+.seg button { font-family: var(--display); font-size: 0.88rem; padding: 0.35rem 0.7rem; background: var(--sheet); color: var(--ink); border: 0; border-right: 1px solid var(--rule); cursor: pointer; }
 .seg button:last-child { border-right: 0; }
 .seg button[aria-pressed="true"] { background: var(--signal-soft); color: var(--ink); box-shadow: inset 0 -2px 0 var(--signal); }
 button:focus-visible, a:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1rem; }
-.kpi { background: var(--sheet); border: 1px solid var(--rule); border-radius: 2px; padding: 1rem; display: grid; gap: 0.25rem; min-width: 0; }
-.kpi .v { font-family: var(--serif); font-size: 1.7rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.kpi { background: var(--sheet); border: 1px solid var(--rule); border-top: 2px solid var(--ink); border-radius: 2px; padding: 1rem; display: grid; gap: 0.25rem; min-width: 0; }
+.kpi .v { font-family: var(--mono); font-size: 1.55rem; font-weight: 500; font-variant-numeric: tabular-nums; }
 .kpi .d { font-size: 0.85rem; color: var(--muted); }
 .fav { color: var(--good); } .adv { color: var(--warn); }
 
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 1.25rem; }
-.panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: 2px; padding: 1.1rem; display: grid; gap: 0.75rem; align-content: start; min-width: 0; }
+.panel { background: var(--sheet); border: 1px solid var(--rule); border-top: 2px solid var(--ink); border-radius: 2px; padding: 1.1rem; display: grid; gap: 0.75rem; align-content: start; min-width: 0; }
 .panel .sub { font-size: 0.9rem; color: var(--muted); }
 .chart { position: relative; width: 100%; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
-.chart text { font-family: var(--body); font-size: 11px; fill: var(--muted); }
+.chart text { font-family: var(--display); font-size: 11px; fill: var(--muted); }
 .chart .lbl { fill: var(--ink); font-weight: 600; }
 .legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; font-size: 0.85rem; color: var(--ink); }
 .legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 0.35rem; }
@@ -92,7 +92,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--signal); outlin
 
 .tbl-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
-th, td { padding: 0.4rem 0.55rem; text-align: right; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th, td { font-family: var(--display); padding: 0.4rem 0.55rem; text-align: right; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; white-space: nowrap; }
 th { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
 th:first-child, td:first-child { text-align: left; }
 tr.sub td { font-weight: 600; border-top: 1px solid var(--ink); }
@@ -114,6 +114,29 @@ td.pos { background: var(--good-soft); } td.neg { background: var(--warn-soft); 
 tr.hit-x:hover td { background: var(--signal-soft); }
 tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.links { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; }
+.btn { font-family: var(--display); font-weight: 500; font-size: .9rem; border: 1px solid var(--ink); border-radius: 2px; padding: .45rem .9rem; color: var(--ink); text-decoration: none; background: transparent; cursor: pointer; }
+.btn.primary { background: var(--signal); border-color: var(--signal); color: #fff; }
+.btn:hover { background: var(--signal-soft); }
+.btn.primary:hover { filter: brightness(.9); background: var(--signal); }
+.jump { display: flex; flex-wrap: wrap; gap: .25rem .9rem; font-family: var(--display); font-size: .85rem; width: 100%; padding-bottom: .5rem; border-bottom: 1px solid var(--rule); }
+.jump a { color: var(--ink); text-decoration: none; border-bottom: 2px solid transparent; }
+.jump a:hover { border-bottom-color: var(--signal); }
+.headline { font-family: var(--display); font-weight: 600; font-size: clamp(1.05rem, 2.2vw, 1.3rem); line-height: 1.35; color: var(--signal); max-width: 60ch; margin: 0; text-wrap: balance; }
+.headline-note { font-size: .85rem; color: var(--muted); margin-top: .35rem; }
+.panel, .grid2, .findings { scroll-margin-top: 8rem; }
+#pnl tbody tr[data-line] { cursor: pointer; }
+#pnl tbody tr[data-line]:hover td, #pnl tbody tr[data-line]:focus td { background: var(--signal-soft); }
+#pnl tbody tr[data-line]:focus { outline: none; }
+#pnl tbody tr[data-line]:focus-visible td:first-child { box-shadow: inset 3px 0 0 var(--signal); }
+dialog.line { border: 1px solid var(--rule); border-top: 3px solid var(--signal); border-radius: 2px; padding: 0; background: var(--sheet); color: var(--ink); width: min(38rem, calc(100vw - 32px)); }
+dialog.line::backdrop { background: rgb(19 23 27 / .45); }
+.line .in { padding: 1.25rem; display: grid; gap: .9rem; }
+.line h2 { font-size: 1.3rem; }
+.line .why { font-family: var(--display); font-weight: 600; color: var(--signal); }
+.line .close { justify-self: end; }
+.line .bar { display: inline-block; height: 10px; border-radius: 1px; vertical-align: middle; }
 </style>
 
 <main class="wrap">
@@ -127,9 +150,18 @@ tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
       <span>dbt + DuckDB · 18 models · 67 tests</span>
       <span>Also in Power BI and Qlik Sense</span>
     </div>
+    <div class="links">
+      <a class="btn primary" href="https://app.powerbi.com/view?r=eyJrIjoiMjMwNTVhNGYtMmYzNi00ZmMwLTg3NTUtNjNhN2NiMjQzODhlIiwidCI6IjY2MDMwOWU1LWI1YWEtNDQzNS1iMDU2LTJhYmViOGZmNDZjNyJ9" target="_blank" rel="noopener">Open the Power BI report ↗</a>
+      <a class="btn" href="notebook/">Python notebook</a>
+      <a class="btn" href="https://github.com/Alpralex/finance-fpa-analytics">Code on GitHub</a>
+    </div>
+    <div>
+      <p class="headline" id="headline" aria-live="polite"></p>
+      <p class="headline-note">This sentence is computed from the data and rewrites itself when you change the entity or the period. Click any line of the P&amp;L to see it by entity.</p>
+    </div>
   </header>
 
-  <section class="findings" aria-label="Key findings">
+  <section class="findings" id="findings" aria-label="Key findings">
     <div class="finding"><span class="label">Finding 1</span><b>The group beats budget only because Portugal raised prices.</b><p>Year-to-date EBITDA is €4.41M against a budget of €4.17M (+5.7%). Portugal's 4% list-price rise adds €0.87M. Without it the group would be €0.63M, or 15%, below budget.</p></div>
     <div class="finding"><span class="label">Finding 2</span><b>Spain's hiring savings hide a larger miss.</b><p>Late sales hires keep salaries €0.14M under budget. The same gap cost Hydraulics volume and service revenue, and Spain's EBITDA is 12.6% short.</p></div>
     <div class="finding"><span class="label">Finding 3</span><b>The UK sells more in pounds and less in euros.</b><p>UK product sales are 1.6% above budget at the budget rate but 2.0% below in euros. Sterling averaged about 1.15 against a budget of 1.19, which cost €0.36M of sales.</p></div>
@@ -137,6 +169,7 @@ tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
   </section>
 
   <section class="filters" aria-label="Filters">
+    <nav class="jump" aria-label="Sections"><a href="#findings">Findings</a><a href="#pnl-panel">P&amp;L</a><a href="#bridge-row">Bridge</a><a href="#pvm-panel">Price, volume, mix</a><a href="#cost-row">Costs</a><a href="#chk-panel">Ledger checks</a><a href="#method">How it is built</a></nav>
     <div class="grp"><span class="label">Entity</span><div class="seg" id="ent-seg"></div></div>
     <div class="grp"><span class="label">Period</span>
       <div class="seg" id="per-seg">
@@ -156,15 +189,15 @@ tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
     <div class="chart" id="entvar"></div>
   </section>
 
-  <section class="panel" aria-labelledby="pnl-h">
+  <section class="panel" id="pnl-panel" aria-labelledby="pnl-h">
     <h2 id="pnl-h">Management P&amp;L</h2>
     <p class="sub" id="pnl-sub"></p>
     <div class="tbl-wrap"><table id="pnl"></table></div>
     <button class="toggle" id="pnl-toggle" aria-expanded="false">Show accounts</button>
-    <p class="note">Revenue is positive and costs negative, so a positive variance is always favourable. Shaded cells move EBITDA by more than 2% of budget.</p>
+    <p class="note">Revenue is positive and costs negative, so a positive variance is always favourable. Shaded cells move EBITDA by more than 2% of budget. Click a line to see it by entity.</p>
   </section>
 
-  <div class="grid2">
+  <div class="grid2" id="bridge-row">
     <section class="panel" aria-labelledby="br-h">
       <h2 id="br-h">EBITDA bridge, budget to actual</h2>
       <p class="sub">Jan–Sep 2026. Trading effects at budget exchange rates, then FX translation.</p>
@@ -179,14 +212,14 @@ tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
     </section>
   </div>
 
-  <section class="panel" aria-labelledby="pvm-h">
+  <section class="panel" id="pvm-panel" aria-labelledby="pvm-h">
     <h2 id="pvm-h">Product margin: volume, mix, price, cost and FX</h2>
     <p class="sub">Jan–Sep 2026, sales minus cost of materials, budget to actual, in thousands of euros.</p>
     <div class="tbl-wrap"><table id="pvm"></table></div>
     <p class="note">Volume is actual units at budget prices, so fasteners and pumps add up in one unit. Mix is the margin lost or gained because the sales moved between lines with different margins.</p>
   </section>
 
-  <div class="grid2">
+  <div class="grid2" id="cost-row">
     <section class="panel" aria-labelledby="cc-h">
       <h2 id="cc-h">Operating costs by cost centre</h2>
       <p class="sub">Jan–Sep 2026, actual minus budget. Right is favourable.</p>
@@ -200,23 +233,33 @@ tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
     </section>
   </div>
 
-  <section class="panel" aria-labelledby="chk-h">
+  <section class="panel" id="chk-panel" aria-labelledby="chk-h">
     <h2 id="chk-h">Ledger exceptions to clear before close</h2>
     <p class="sub">Duplicate supplier invoices, and costs that moved more than 25% against both the last three months and the same month last year.</p>
     <div class="tbl-wrap"><table id="checks"></table></div>
   </section>
 
-  <section class="method" aria-label="Method">
+  <section class="method" id="method" aria-label="Method">
     <h2>How it is built</h2>
     <ul>
       <li>The data are synthetic: a Python generator writes 81,000 journal lines, budgets, a reforecast, a sales sub-ledger and FX rates for a fictional company. Eight business stories are planted on purpose and listed in the README, so the findings can be checked.</li>
       <li>dbt models on DuckDB turn the ledger into a star schema (entity, account hierarchy, cost centre, product line, month) and marts for the P&amp;L, the bridge and the exceptions.</li>
       <li>Tests check that every journal balances, that the sales sub-ledger agrees with the ledger to the cent, and that both bridges add up exactly to the variance they explain.</li>
-      <li>The same marts feed a Power BI model (DAX measures, row-level security by entity) and a Qlik Sense app (set analysis, section access).</li>
+      <li>The same marts feed a Power BI model (about 90 DAX measures, a calculation group for month, quarter and year to date, a report-page tooltip, row-level security by entity) and a Qlik Sense app (set analysis, section access).</li>
     </ul>
     <p class="note">Code: <a href="https://github.com/Alpralex/finance-fpa-analytics">github.com/Alpralex/finance-fpa-analytics</a></p>
   </section>
 </main>
+
+<dialog class="line" id="line" aria-labelledby="line-name">
+  <div class="in">
+    <div><span class="label" id="line-kicker">P&amp;L line by entity</span><h2 id="line-name"></h2></div>
+    <p class="why" id="line-why"></p>
+    <div class="tbl-wrap"><table id="line-tbl"></table></div>
+    <p class="note">The Power BI version shows the same thing as a report-page tooltip: hover any line of the P&amp;L matrix.</p>
+    <button type="button" class="btn close" id="line-close">Close</button>
+  </div>
+</dialog>
 
 <script>
 (function () {
@@ -300,7 +343,7 @@ tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
     var head = '<thead><tr><th></th><th>' + aName() + '</th><th>Budget</th><th>Variance</th><th>Var %</th><th>' + (state.per === 'FY' ? 'FY 2025' : 'Prior year') + '</th><th>vs PY</th></tr></thead>';
     function row(name, s, klass) {
       var v = s.a - s.b, shade = klass !== 'acct' && Math.abs(v) > thr ? (v > 0 ? ' pos' : ' neg') : '';
-      return '<tr class="' + (klass || '') + '"><td>' + name + '</td><td>' + k(s.a) + '</td><td>' + k(s.b) + '</td><td class="' + shade + '"><span class="' + cls(v) + '">' + eurK(v) + '</span></td><td>' + pct(s.b ? v / Math.abs(s.b) : null) + '</td><td>' + k(s.p) + '</td><td>' + pct(s.p ? (s.a - s.p) / Math.abs(s.p) : null) + '</td></tr>';
+      return '<tr class="' + (klass || '') + '"' + (klass === 'acct' ? '' : ' data-line="' + name + '" tabindex="0"') + '><td>' + name + '</td><td>' + k(s.a) + '</td><td>' + k(s.b) + '</td><td class="' + shade + '"><span class="' + cls(v) + '">' + eurK(v) + '</span></td><td>' + pct(s.b ? v / Math.abs(s.b) : null) + '</td><td>' + k(s.p) + '</td><td>' + pct(s.p ? (s.a - s.p) / Math.abs(s.p) : null) + '</td></tr>';
     }
     function ratio(name, num, den) {
       return '<tr class="ratio"><td>' + name + '</td><td>' + share(num.a / den.a) + '</td><td>' + share(num.b / den.b) + '</td><td>' + pct(num.a / den.a - num.b / den.b).replace('%', ' pts') + '</td><td></td><td>' + share(num.p / den.p) + '</td><td></td></tr>';
@@ -314,6 +357,68 @@ tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
     });
     body += row('EBIT', t.ebit, 'sub');
     document.getElementById('pnl').innerHTML = head + '<tbody>' + body + '</tbody>';
+  }
+  function eurKs(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : '+') + '€' + Math.abs(r).toLocaleString('en-US') + 'k'; }
+  function lineTest(name) {
+    if (name === 'Gross margin') return function (x) { return x[3] === 'Gross margin'; };
+    if (name === 'EBITDA') return function (x) { return x[3] === 'Gross margin' || x[3] === 'EBITDA'; };
+    if (name === 'EBIT') return function () { return true; };
+    return function (x) { return x[2] === name; };
+  }
+  // Same period as the page, every entity: the web version of the Power BI line tooltip
+  function lineByEntity(name) {
+    var keep = {}; D.meta.accounts.forEach(function (x) { if (lineTest(name)(x)) keep[x[0]] = 1; });
+    var saved = state.ent; state.ent = 'ALL';
+    var rows = periodRows(); state.ent = saved;
+    var out = {};
+    rows.forEach(function (r) {
+      if (!keep[r[2]]) return;
+      var o = out[r[1]] = out[r[1]] || { a: 0, b: 0 };
+      o.a += (state.per === 'FY' ? r[5] : r[3]) || 0; o.b += r[4] || 0;
+    });
+    return D.meta.entities.map(function (e) { var o = out[e[0]] || { a: 0, b: 0 }; return { id: e[0], name: e[1], a: o.a, b: o.b, v: o.a - o.b }; });
+  }
+  function openLine(name) {
+    var ents = lineByEntity(name), tot = ents.reduce(function (s, e) { return { a: s.a + e.a, b: s.b + e.b, v: s.v + e.v }; }, { a: 0, b: 0, v: 0 });
+    var worst = ents.slice().sort(function (x, y) { return x.v - y.v; })[0], best = ents.slice().sort(function (x, y) { return y.v - x.v; })[0];
+    var max = Math.max.apply(null, ents.map(function (e) { return Math.abs(e.v); })) || 1;
+    document.getElementById('line-kicker').textContent = 'P&L line by entity · ' + periodName();
+    document.getElementById('line-name').textContent = name;
+    document.getElementById('line-why').textContent = name + ' is ' + eurKs(tot.v) + ' against budget for the group (' + pct(tot.b ? tot.v / Math.abs(tot.b) : null) + '). ' +
+      (worst.v < 0 ? 'Furthest behind: ' + worst.name + ', ' + eurKs(worst.v) + '.' : 'Every entity is on or ahead of budget; best: ' + best.name + ', ' + eurKs(best.v) + '.');
+    var head = '<thead><tr><th>Entity</th><th>' + aName() + '</th><th>Budget</th><th>Variance</th><th>Var %</th><th></th></tr></thead>';
+    var body = ents.map(function (e) {
+      var w = Math.round(Math.abs(e.v) / max * 90);
+      return '<tr><td>' + e.name + '</td><td>' + k(e.a) + '</td><td>' + k(e.b) + '</td><td><span class="' + cls(e.v) + '">' + eurK(e.v) + '</span></td><td>' + pct(e.b ? e.v / Math.abs(e.b) : null) +
+        '</td><td style="text-align:left"><span class="bar" style="width:' + w + 'px;background:var(' + (e.v < 0 ? '--warn' : '--good') + ')"></span></td></tr>';
+    }).join('');
+    document.getElementById('line-tbl').innerHTML = head + '<tbody>' + body + '<tr class="sub"><td>Group</td><td>' + k(tot.a) + '</td><td>' + k(tot.b) + '</td><td><span class="' + cls(tot.v) + '">' + eurK(tot.v) + '</span></td><td>' + pct(tot.b ? tot.v / Math.abs(tot.b) : null) + '</td><td></td></tr></tbody>';
+    var dlg = document.getElementById('line');
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  }
+  function pnlPick(e) {
+    var tr = e.target.closest('tr[data-line]'); if (!tr) return;
+    if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return; if (e.type === 'keydown') e.preventDefault();
+    openLine(tr.dataset.line);
+  }
+  document.getElementById('pnl').addEventListener('click', pnlPick);
+  document.getElementById('pnl').addEventListener('keydown', pnlPick);
+  document.getElementById('line-close').addEventListener('click', function () { document.getElementById('line').close(); });
+  document.getElementById('line').addEventListener('click', function (e) { if (e.target === this) this.close(); });
+
+  // Live headline: one sentence that answers the page for the current entity and period
+  function renderHeadline() {
+    var t = totals(byAccount()), ev = t.ebitda.a - t.ebitda.b, nr = t.rev.b ? t.rev.a / t.rev.b - 1 : null, out;
+    var lead = (state.per === 'FY' ? 'Full year 2026 (9+3 forecast): ' : periodName() + ': ') + 'net revenue ' + pct(nr) + ' and EBITDA ' + eurKs(ev) + ' (' + pct(t.ebitda.b ? ev / Math.abs(t.ebitda.b) : null) + ') against budget';
+    if (state.ent === 'ALL') {
+      var worst = lineByEntity('EBITDA').sort(function (x, y) { return x.v - y.v; })[0];
+      out = lead + '. Furthest behind: ' + worst.name + ' at ' + eurKs(worst.v) + ' EBITDA.';
+    } else {
+      var acc = byAccount(), lines = GROUPS.map(function (g) { var s = sumWhere(acc, function (x) { return x[2] === g; }); return { g: g, v: s.a - s.b }; })
+        .sort(function (x, y) { return x.v - y.v; });
+      out = entName(state.ent) + ', ' + lead + '. Weakest line: ' + lines[0].g + ', ' + eurKs(lines[0].v) + '.';
+    }
+    document.getElementById('headline').textContent = out;
   }
 
   // ---------- EBITDA bridge (horizontal waterfall) ----------
@@ -554,7 +659,7 @@ tr.hit-x.on td { background: var(--signal-soft); font-weight: 600; }
       (state.per.charAt(0) === 'M' ? '<span>The bridge, product margin and cost centres stay Jan–Sep: the export has no monthly detail for them.</span>' : '') +
       (state.cc ? '<span>The entity chart shows that cost centre\'s operating costs.</span>' : '');
   }
-  function render() { renderSelection(); renderEntVar(); renderKpis(); renderPnl(); renderBridge(); renderMonthly(); renderPvm(); renderCc(); renderFx(); renderChecks(); }
+  function render() { renderHeadline(); renderSelection(); renderEntVar(); renderKpis(); renderPnl(); renderBridge(); renderMonthly(); renderPvm(); renderCc(); renderFx(); renderChecks(); }
 
   function seg(id, key) {
     document.getElementById(id).addEventListener('click', function (e) {

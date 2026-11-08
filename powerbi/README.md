@@ -84,8 +84,12 @@ Key definitions:
 | Net Revenue / Gross Margin / EBITDA / EBIT | Account scopes on `dim_account`: pnl_group = Net revenue; pnl_subtotal = Gross margin; pnl_subtotal in (Gross margin, EBITDA); all P&L accounts |
 | Units Actual | Not called *Units*: `fct_sales_volume` has a `units` column and Power BI names are case-insensitive, so a measure with a column's name breaks the model |
 
-Time intelligence uses explicit measures, not a calculation group, so the model needs no
-`discourageImplicitMeasures` setting and works in any Desktop version.
+Time intelligence uses explicit measures (the YTD and full-year folders). On top of them, the P&L matrix uses a
+calculation group, **Period**, with three items: *Month*, *Quarter to date* and *Year to date*. Each item finds the
+last closed month in context and filters `dim_date[date_day]` from the start of that month, quarter or year up to it,
+so actual and budget always cover the same months. The full-year measures remove the Period filter, so the FY budget
+and FY forecast columns do not move. A calculation group requires `discourageImplicitMeasures`, so the model sets it
+and the matrix shades subtotal rows with the hidden measure `PL Is Subtotal` instead of an implicit aggregation.
 
 ### P&L layout and subtotals
 
@@ -111,6 +115,22 @@ on the matrix rows (it sorts by `line_order`), the `PL` measures as values, and 
 the subtotal rows are the totals. `is_subtotal` = 1 can drive bold rows with conditional formatting.
 `PL % of Net Revenue` turns the Gross margin and EBITDA rows into the gross margin % and EBITDA %.
 For account detail use a second matrix with `dim_account[pnl_group]` → `account_name` and the plain measures.
+
+## Report pages and what to try
+
+The report opens on **Start here**: the question each page answers, with the live answer next to it (a DAX measure
+that rewrites itself when you filter). Select an answer to open its page; the tabs at the top move between pages.
+
+| Page | What to try | Headline with Entity = all, Year = 2026 |
+| --- | --- | --- |
+| P&L vs budget | Switch **Period** (top right of the matrix) between Month, Quarter to date and Year to date. Hover a P&L line: the tooltip shows that line's variance by entity | Net revenue +0.9% and EBITDA +€237k (+5.7%) against budget, year to date. Furthest behind: Atlántica España at -€172k EBITDA. |
+| EBITDA bridge | Pick one entity: the bridge and the headline follow | EBITDA €4.41m against a budget of €4.17m. Biggest lift: Sales price, +€868k. Biggest drag: Unit cost, -€324k. |
+| Margin PVM | Pick Portugal, then the UK (the only entity with an FX effect) | Product margin +€307k against budget. Biggest driver: Price, +€868k. Biggest drag: Unit cost, -€324k. |
+| Cost centres and checks | Change the year to 2025 to see the French bonus spike | Outbound freight is the cost line furthest off budget: -11.4% (-€154k) year to date, worst in Atlântica Portugal (-€161k). The ledger checks flag 6 exceptions, including 1 duplicate invoice. |
+
+The headlines, matrix titles and tooltip colours are hidden measures in the display folder *Story* of `_Measures`.
+`tmdl-view-script.tmdl` still creates the base model only (without the Period calculation group and the Story measures);
+open the PBIP to get everything.
 
 ## Row-level security
 

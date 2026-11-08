@@ -125,7 +125,7 @@ table _Measures
 	measure 'Full Year Budget' =
 			VAR _Year = MAX ( dim_date[fiscal_year] )
 			RETURN
-				CALCULATE ( [Budget], REMOVEFILTERS ( dim_date ), dim_date[fiscal_year] = _Year )
+				CALCULATE ( [Budget], REMOVEFILTERS ( dim_date ), REMOVEFILTERS ( Period ), dim_date[fiscal_year] = _Year )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: 659bc233-6481-43b1-afbf-74b77ebd332e
@@ -134,7 +134,7 @@ table _Measures
 	measure 'Full Year Forecast' =
 			VAR _Year = MAX ( dim_date[fiscal_year] )
 			RETURN
-				CALCULATE ( [Forecast 9+3], REMOVEFILTERS ( dim_date ), dim_date[fiscal_year] = _Year )
+				CALCULATE ( [Forecast 9+3], REMOVEFILTERS ( dim_date ), REMOVEFILTERS ( Period ), dim_date[fiscal_year] = _Year )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: 5e47cb36-b4a2-43bd-acc5-7088ede46e3c
@@ -587,3 +587,155 @@ table _Measures
 				in
 					Source
 
+	/// One-sentence answer for the P&L page: revenue and EBITDA against budget and the entity furthest behind.
+	measure 'Headline PL' =
+			VAR NR = [Net Revenue Var vs Budget YTD %]
+			VAR EV = [EBITDA Var vs Budget YTD]
+			VAR EVp = DIVIDE ( EV, ABS ( [EBITDA Budget YTD] ) )
+			VAR ByEnt =
+				FILTER (
+					ADDCOLUMNS ( VALUES ( dim_entity[entity_name] ), "@v", [EBITDA Var vs Budget YTD] ),
+					NOT ISBLANK ( [@v] )
+				)
+			VAR W = TOPN ( 1, ByEnt, [@v], ASC )
+			VAR WV = MAXX ( W, [@v] )
+			RETURN
+				IF (
+					ISBLANK ( [Net Revenue YTD] ),
+					"No actuals in this selection.",
+					"Net revenue " & FORMAT ( NR, "+0.0%;-0.0%" ) & " and EBITDA " & IF ( EV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( EV ) / 1000, "#,0" ) & "k"
+						& " (" & FORMAT ( EVp, "+0.0%;-0.0%" ) & ") against budget, year to date"
+						& IF (
+							COUNTROWS ( ByEnt ) > 1,
+							". Furthest behind: " & MAXX ( W, dim_entity[entity_name] ) & " at " & IF ( WV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( WV ) / 1000, "#,0" ) & "k" & " EBITDA.",
+							"."
+						)
+				)
+		isHidden
+		displayFolder: Story
+		lineageTag: fc0c1cdd-794d-5f8b-b70e-bc859d6cdaa7
+
+	/// One-sentence answer for the EBITDA bridge page: actual against budget and the largest step each way.
+	measure 'Headline Bridge' =
+			VAR Steps =
+				FILTER (
+					ADDCOLUMNS ( VALUES ( mart_ebitda_bridge[step] ), "@v", [Bridge Amount] ),
+					NOT ( mart_ebitda_bridge[step] IN { "Budget EBITDA", "Actual EBITDA" } ) && NOT ISBLANK ( [@v] )
+				)
+			VAR Up = TOPN ( 1, Steps, [@v], DESC )
+			VAR Dn = TOPN ( 1, Steps, [@v], ASC )
+			VAR UpV = MAXX ( Up, [@v] )
+			VAR DnV = MAXX ( Dn, [@v] )
+			VAR B = CALCULATE ( [Bridge Amount], mart_ebitda_bridge[step] = "Budget EBITDA" )
+			VAR A = CALCULATE ( [Bridge Amount], mart_ebitda_bridge[step] = "Actual EBITDA" )
+			RETURN
+				IF (
+					ISBLANK ( A ),
+					"No bridge for this selection.",
+					"EBITDA " & "€" & FORMAT ( A / 1000000, "0.00" ) & "m" & " against a budget of " & "€" & FORMAT ( B / 1000000, "0.00" ) & "m" & ". Biggest lift: "
+						& MAXX ( Up, mart_ebitda_bridge[step] ) & ", " & IF ( UpV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( UpV ) / 1000, "#,0" ) & "k" & ". Biggest drag: "
+						& MAXX ( Dn, mart_ebitda_bridge[step] ) & ", " & IF ( DnV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( DnV ) / 1000, "#,0" ) & "k" & "."
+				)
+		isHidden
+		displayFolder: Story
+		lineageTag: 6d4fd4fb-70d5-575d-be18-def296e778c6
+
+	/// One-sentence answer for the Margin PVM page: product margin variance and its largest driver each way.
+	measure 'Headline PVM' =
+			VAR T =
+				{
+					( "Volume", [Volume Effect] ),
+					( "Mix", [Mix Effect] ),
+					( "Price", [Price Effect] ),
+					( "Unit cost", [Unit Cost Effect] ),
+					( "FX", [Margin FX Effect] )
+				}
+			VAR Up = TOPN ( 1, T, [Value2], DESC )
+			VAR Dn = TOPN ( 1, T, [Value2], ASC )
+			VAR UpV = MAXX ( Up, [Value2] )
+			VAR DnV = MAXX ( Dn, [Value2] )
+			VAR PMV = [Product Margin Var]
+			RETURN
+				IF (
+					ISBLANK ( PMV ),
+					"No product margin in this selection.",
+					"Product margin " & IF ( PMV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( PMV ) / 1000, "#,0" ) & "k" & " against budget. Biggest driver: " & MAXX ( Up, [Value1] ) & ", "
+						& IF ( UpV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( UpV ) / 1000, "#,0" ) & "k" & ". Biggest drag: " & MAXX ( Dn, [Value1] ) & ", " & IF ( DnV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( DnV ) / 1000, "#,0" ) & "k" & "."
+				)
+		isHidden
+		displayFolder: Story
+		lineageTag: 68244419-fd38-5abb-9254-808dea70dacf
+
+	/// One-sentence answer for the Cost centres and checks page: the cost line furthest off budget and the ledger exceptions.
+	measure 'Headline Checks' =
+			VAR Acc =
+				FILTER (
+					ADDCOLUMNS (
+						CALCULATETABLE ( VALUES ( dim_account[account_name] ), dim_account[is_revenue] = FALSE () ),
+						"@p", [Var vs Budget YTD %],
+						"@v", [Var vs Budget YTD]
+					),
+					NOT ISBLANK ( [@p] )
+				)
+			VAR W = TOPN ( 1, Acc, [@p], ASC )
+			VAR WName = MAXX ( W, dim_account[account_name] )
+			VAR WV = MAXX ( W, [@v] )
+			VAR Ent =
+				FILTER (
+					ADDCOLUMNS (
+						VALUES ( dim_entity[entity_name] ),
+						"@e", CALCULATE ( [Var vs Budget YTD], dim_account[account_name] = WName )
+					),
+					NOT ISBLANK ( [@e] )
+				)
+			VAR WE = TOPN ( 1, Ent, [@e], ASC )
+			VAR WEV = MAXX ( WE, [@e] )
+			VAR Ex = [Journal Exceptions] + 0
+			VAR Dup = [Duplicate Invoices] + 0
+			RETURN
+				IF (
+					ISBLANK ( WName ),
+					"No costs in this selection.",
+					WName & " is the cost line furthest off budget: " & FORMAT ( MAXX ( W, [@p] ), "+0.0%;-0.0%" ) & " ("
+						& IF ( WV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( WV ) / 1000, "#,0" ) & "k" & ") year to date"
+						& IF ( COUNTROWS ( Ent ) > 1, ", worst in " & MAXX ( WE, dim_entity[entity_name] ) & " (" & IF ( WEV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( WEV ) / 1000, "#,0" ) & "k" & ")", "" )
+						& ". The ledger checks flag " & Ex & " exception" & IF ( Ex <> 1, "s", "" ) & ", including " & Dup
+						& " duplicate invoice" & IF ( Dup <> 1, "s", "" ) & "."
+				)
+		isHidden
+		displayFolder: Story
+		lineageTag: c6f76f7f-c44a-5794-891a-717929da79df
+
+	/// Title of the P&L matrix; follows the Period calculation group.
+	measure 'PL Matrix Title' =
+			VAR P = SELECTEDVALUE ( Period[Period], "Year to date" )
+			RETURN
+				"P&L against budget, " & SWITCH ( P, "Month", "last closed month", "Quarter to date", "quarter to date", "year to date" )
+		isHidden
+		displayFolder: Story
+		lineageTag: 6e1e190e-64fd-5ed7-93b0-3b9ceb2dd906
+
+	/// Subtitle of the P&L matrix.
+	measure 'PL Matrix Subtitle' =
+			VAR D = CALCULATE ( MAX ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+			RETURN
+				"€ thousands. Actuals to " & FORMAT ( D, "mmmm yyyy" )
+					& ". Green is favourable on every line. Switch the period at the right; hover a line to see it by entity"
+		isHidden
+		displayFolder: Story
+		lineageTag: 19ff8ded-9bbe-5675-b48a-9a107f9d5c4d
+
+	/// 1 on subtotal rows of the P&L matrix: drives the shaded rows (a measure, so the model can discourage implicit measures).
+	measure 'PL Is Subtotal' =
+			MAX ( pnl_layout[is_subtotal] )
+		formatString: 0
+		isHidden
+		displayFolder: Story
+		lineageTag: ed82a889-0346-5c6f-9e0e-61677b5edb73
+
+	/// Bar colour for the P&L line tooltip: green when favourable, red when not.
+	measure 'PL Var Colour' =
+			IF ( [PL Var vs Budget] < 0, "#B42318", "#1F6B3A" )
+		isHidden
+		displayFolder: Story
+		lineageTag: a17a83dc-fc9c-53d0-aca1-941a28de1ed1

@@ -3,9 +3,9 @@
   "name": "c4b83af6b04ad506e185",
   "position": {
     "x": 16,
-    "y": 256,
+    "y": 282,
     "z": 5000,
-    "height": 448,
+    "height": 422,
     "width": 1248,
     "tabOrder": 5000
   },
@@ -43,12 +43,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "PL Actual YTD"
+                  "Property": "PL Actual"
                 }
               },
-              "queryRef": "_Measures.PL Actual YTD",
-              "nativeQueryRef": "PL Actual YTD",
-              "displayName": "Actual YTD"
+              "queryRef": "_Measures.PL Actual",
+              "nativeQueryRef": "PL Actual",
+              "displayName": "Actual"
             },
             {
               "field": {
@@ -58,12 +58,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "PL Budget YTD"
+                  "Property": "PL Budget"
                 }
               },
-              "queryRef": "_Measures.PL Budget YTD",
-              "nativeQueryRef": "PL Budget YTD",
-              "displayName": "Budget YTD"
+              "queryRef": "_Measures.PL Budget",
+              "nativeQueryRef": "PL Budget",
+              "displayName": "Budget"
             },
             {
               "field": {
@@ -73,11 +73,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "PL Var vs Budget YTD"
+                  "Property": "PL Var vs Budget"
                 }
               },
-              "queryRef": "_Measures.PL Var vs Budget YTD",
-              "nativeQueryRef": "PL Var vs Budget YTD",
+              "queryRef": "_Measures.PL Var vs Budget",
+              "nativeQueryRef": "PL Var vs Budget",
               "displayName": "Var vs budget"
             },
             {
@@ -88,11 +88,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "PL Var vs Budget YTD %"
+                  "Property": "PL Var vs Budget %"
                 }
               },
-              "queryRef": "_Measures.PL Var vs Budget YTD %",
-              "nativeQueryRef": "PL Var vs Budget YTD %",
+              "queryRef": "_Measures.PL Var vs Budget %",
+              "nativeQueryRef": "PL Var vs Budget %",
               "displayName": "Var %"
             },
             {
@@ -103,12 +103,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "PL Prior Year YTD"
+                  "Property": "PL Prior Year"
                 }
               },
-              "queryRef": "_Measures.PL Prior Year YTD",
-              "nativeQueryRef": "PL Prior Year YTD",
-              "displayName": "Prior year YTD"
+              "queryRef": "_Measures.PL Prior Year",
+              "nativeQueryRef": "PL Prior Year",
+              "displayName": "Prior year"
             },
             {
               "field": {
@@ -118,11 +118,11 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "PL % of Net Revenue YTD"
+                  "Property": "PL % of Net Revenue"
                 }
               },
-              "queryRef": "_Measures.PL % of Net Revenue YTD",
-              "nativeQueryRef": "PL % of Net Revenue YTD",
+              "queryRef": "_Measures.PL % of Net Revenue",
+              "nativeQueryRef": "PL % of Net Revenue",
               "displayName": "% of net revenue"
             },
             {
@@ -221,18 +221,13 @@
                             "Comparison": {
                               "ComparisonKind": 0,
                               "Left": {
-                                "Aggregation": {
+                                "Measure": {
                                   "Expression": {
-                                    "Column": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "pnl_layout"
-                                        }
-                                      },
-                                      "Property": "is_subtotal"
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
                                     }
                                   },
-                                  "Function": 4
+                                  "Property": "PL Is Subtotal"
                                 }
                               },
                               "Right": {
@@ -263,7 +258,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.PL Actual YTD"
+            "metadata": "_Measures.PL Actual"
           }
         },
         {
@@ -279,18 +274,13 @@
                             "Comparison": {
                               "ComparisonKind": 0,
                               "Left": {
-                                "Aggregation": {
+                                "Measure": {
                                   "Expression": {
-                                    "Column": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "pnl_layout"
-                                        }
-                                      },
-                                      "Property": "is_subtotal"
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
                                     }
                                   },
-                                  "Function": 4
+                                  "Property": "PL Is Subtotal"
                                 }
                               },
                               "Right": {
@@ -321,7 +311,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.PL Budget YTD"
+            "metadata": "_Measures.PL Budget"
           }
         },
         {
@@ -337,18 +327,13 @@
                             "Comparison": {
                               "ComparisonKind": 0,
                               "Left": {
-                                "Aggregation": {
+                                "Measure": {
                                   "Expression": {
-                                    "Column": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "pnl_layout"
-                                        }
-                                      },
-                                      "Property": "is_subtotal"
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
                                     }
                                   },
-                                  "Function": 4
+                                  "Property": "PL Is Subtotal"
                                 }
                               },
                               "Right": {
@@ -379,7 +364,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.PL Var vs Budget YTD"
+            "metadata": "_Measures.PL Var vs Budget"
           }
         },
         {
@@ -395,18 +380,13 @@
                             "Comparison": {
                               "ComparisonKind": 0,
                               "Left": {
-                                "Aggregation": {
+                                "Measure": {
                                   "Expression": {
-                                    "Column": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "pnl_layout"
-                                        }
-                                      },
-                                      "Property": "is_subtotal"
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
                                     }
                                   },
-                                  "Function": 4
+                                  "Property": "PL Is Subtotal"
                                 }
                               },
                               "Right": {
@@ -437,7 +417,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.PL Var vs Budget YTD %"
+            "metadata": "_Measures.PL Var vs Budget %"
           }
         },
         {
@@ -453,18 +433,13 @@
                             "Comparison": {
                               "ComparisonKind": 0,
                               "Left": {
-                                "Aggregation": {
+                                "Measure": {
                                   "Expression": {
-                                    "Column": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "pnl_layout"
-                                        }
-                                      },
-                                      "Property": "is_subtotal"
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
                                     }
                                   },
-                                  "Function": 4
+                                  "Property": "PL Is Subtotal"
                                 }
                               },
                               "Right": {
@@ -495,7 +470,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.PL Prior Year YTD"
+            "metadata": "_Measures.PL Prior Year"
           }
         },
         {
@@ -511,18 +486,13 @@
                             "Comparison": {
                               "ComparisonKind": 0,
                               "Left": {
-                                "Aggregation": {
+                                "Measure": {
                                   "Expression": {
-                                    "Column": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "pnl_layout"
-                                        }
-                                      },
-                                      "Property": "is_subtotal"
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
                                     }
                                   },
-                                  "Function": 4
+                                  "Property": "PL Is Subtotal"
                                 }
                               },
                               "Right": {
@@ -553,7 +523,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.PL % of Net Revenue YTD"
+            "metadata": "_Measures.PL % of Net Revenue"
           }
         },
         {
@@ -569,18 +539,13 @@
                             "Comparison": {
                               "ComparisonKind": 0,
                               "Left": {
-                                "Aggregation": {
+                                "Measure": {
                                   "Expression": {
-                                    "Column": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "pnl_layout"
-                                        }
-                                      },
-                                      "Property": "is_subtotal"
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
                                     }
                                   },
-                                  "Function": 4
+                                  "Property": "PL Is Subtotal"
                                 }
                               },
                               "Right": {
@@ -627,18 +592,13 @@
                             "Comparison": {
                               "ComparisonKind": 0,
                               "Left": {
-                                "Aggregation": {
+                                "Measure": {
                                   "Expression": {
-                                    "Column": {
-                                      "Expression": {
-                                        "SourceRef": {
-                                          "Entity": "pnl_layout"
-                                        }
-                                      },
-                                      "Property": "is_subtotal"
+                                    "SourceRef": {
+                                      "Entity": "_Measures"
                                     }
                                   },
-                                  "Function": 4
+                                  "Property": "PL Is Subtotal"
                                 }
                               },
                               "Right": {
@@ -691,7 +651,7 @@
                                       "Entity": "_Measures"
                                     }
                                   },
-                                  "Property": "PL Var vs Budget YTD"
+                                  "Property": "PL Var vs Budget"
                                 }
                               },
                               "Right": {
@@ -703,7 +663,7 @@
                           },
                           "Value": {
                             "Literal": {
-                              "Value": "'#1F7A35'"
+                              "Value": "'#1F6B3A'"
                             }
                           }
                         },
@@ -718,7 +678,7 @@
                                       "Entity": "_Measures"
                                     }
                                   },
-                                  "Property": "PL Var vs Budget YTD"
+                                  "Property": "PL Var vs Budget"
                                 }
                               },
                               "Right": {
@@ -749,7 +709,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.PL Var vs Budget YTD"
+            "metadata": "_Measures.PL Var vs Budget"
           }
         },
         {
@@ -771,7 +731,7 @@
                                       "Entity": "_Measures"
                                     }
                                   },
-                                  "Property": "PL Var vs Budget YTD %"
+                                  "Property": "PL Var vs Budget %"
                                 }
                               },
                               "Right": {
@@ -783,7 +743,7 @@
                           },
                           "Value": {
                             "Literal": {
-                              "Value": "'#1F7A35'"
+                              "Value": "'#1F6B3A'"
                             }
                           }
                         },
@@ -798,7 +758,7 @@
                                       "Entity": "_Measures"
                                     }
                                   },
-                                  "Property": "PL Var vs Budget YTD %"
+                                  "Property": "PL Var vs Budget %"
                                 }
                               },
                               "Right": {
@@ -829,7 +789,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.PL Var vs Budget YTD %"
+            "metadata": "_Measures.PL Var vs Budget %"
           }
         }
       ],
@@ -852,7 +812,7 @@
             }
           },
           "selector": {
-            "metadata": "_Measures.PL Actual YTD"
+            "metadata": "_Measures.PL Actual"
           }
         },
         {
@@ -873,7 +833,7 @@
             }
           },
           "selector": {
-            "metadata": "_Measures.PL Budget YTD"
+            "metadata": "_Measures.PL Budget"
           }
         },
         {
@@ -894,7 +854,7 @@
             }
           },
           "selector": {
-            "metadata": "_Measures.PL Var vs Budget YTD"
+            "metadata": "_Measures.PL Var vs Budget"
           }
         },
         {
@@ -915,7 +875,7 @@
             }
           },
           "selector": {
-            "metadata": "_Measures.PL Prior Year YTD"
+            "metadata": "_Measures.PL Prior Year"
           }
         },
         {
@@ -975,8 +935,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'P&L against budget, year to date'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "PL Matrix Title"
                 }
               }
             }
@@ -989,7 +954,7 @@
             "altText": {
               "expr": {
                 "Literal": {
-                  "Value": "'Matrix of the P&L from net revenue to EBIT: actual and budget year to date, variance in euros and percent, prior year, percent of net revenue, and full-year budget and forecast. Variances are green when favourable and red when unfavourable; subtotal rows are shaded.'"
+                  "Value": "'P&L matrix from net revenue to EBIT for the period chosen at the right (last closed month, quarter to date or year to date): actual, budget, variance in euros and percent, prior year, percent of net revenue, and full-year budget and forecast. Green is favourable, red unfavourable; subtotal rows are shaded.'"
                 }
               }
             }
@@ -1042,8 +1007,40 @@
             },
             "text": {
               "expr": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "PL Matrix Subtitle"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualTooltip": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
                 "Literal": {
-                  "Value": "'€ thousands. Revenue positive, costs negative: a positive variance is favourable on every line. Shaded rows are subtotals'"
+                  "Value": "true"
+                }
+              }
+            },
+            "type": {
+              "expr": {
+                "Literal": {
+                  "Value": "'ReportPage'"
+                }
+              }
+            },
+            "section": {
+              "expr": {
+                "Literal": {
+                  "Value": "'d0a1b2c3d4e5f6a7b803'"
                 }
               }
             }

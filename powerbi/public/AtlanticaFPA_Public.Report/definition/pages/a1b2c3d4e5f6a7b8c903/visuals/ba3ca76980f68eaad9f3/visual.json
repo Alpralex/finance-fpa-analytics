@@ -3,9 +3,9 @@
   "name": "ba3ca76980f68eaad9f3",
   "position": {
     "x": 16,
-    "y": 58,
+    "y": 94,
     "z": 5000,
-    "height": 40,
+    "height": 24,
     "width": 720,
     "tabOrder": 5000
   },
@@ -22,8 +22,8 @@
                     "value": "Product margin, budget to actual, split into volume, mix, price, unit cost and FX",
                     "textStyle": {
                       "fontFamily": "Segoe UI",
-                      "fontSize": "13px",
-                      "color": "#5D6876"
+                      "fontSize": "12px",
+                      "color": "#3B434B"
                     }
                   }
                 ],

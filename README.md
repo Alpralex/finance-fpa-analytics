@@ -2,7 +2,7 @@
 
 [![Dashboard screenshot](https://guilhermerigonato.com/img/fpa.webp)](https://guilhermerigonato.com/finance-fpa-analytics/)
 
-**Live:** [web dashboard](https://guilhermerigonato.com/finance-fpa-analytics/) · [Power BI report (publish to web)](https://app.powerbi.com/view?r=eyJrIjoiMjMwNTVhNGYtMmYzNi00ZmMwLTg3NTUtNjNhN2NiMjQzODhlIiwidCI6IjY2MDMwOWU1LWI1YWEtNDQzNS1iMDU2LTJhYmViOGZmNDZjNyJ9) · [all projects](https://guilhermerigonato.com)
+**Live:** [web dashboard](https://guilhermerigonato.com/finance-fpa-analytics/) · [Power BI report (publish to web)](https://app.powerbi.com/view?r=eyJrIjoiNjQ1ZWZkZTQtZmVlNy00Yzk1LWFmZTAtZTJkNjQyN2I4OGYyIiwidCI6IjY2MDMwOWU1LWI1YWEtNDQzNS1iMDU2LTJhYmViOGZmNDZjNyJ9) · [all projects](https://guilhermerigonato.com)
 
 An FP&A project on a synthetic group ledger: budget vs actual, the October 9+3 reforecast, an EBITDA bridge,
 a price-volume-mix split of product margin and the ledger exceptions to clear before close. The data are

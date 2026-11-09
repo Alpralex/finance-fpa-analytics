@@ -690,8 +690,9 @@ table _Measures
 				)
 			VAR WE = TOPN ( 1, Ent, [@e], ASC )
 			VAR WEV = MAXX ( WE, [@e] )
-			VAR Ex = [Journal Exceptions] + 0
-			VAR Dup = [Duplicate Invoices] + 0
+			VAR FY = IF ( ISFILTERED ( dim_date[fiscal_year] ), BLANK (), CALCULATE ( MAX ( dim_date[fiscal_year] ), ALL ( dim_date ), dim_date[is_closed] = TRUE () ) )
+			VAR Ex = IF ( ISBLANK ( FY ), [Journal Exceptions], CALCULATE ( [Journal Exceptions], dim_date[fiscal_year] = FY ) ) + 0
+			VAR Dup = IF ( ISBLANK ( FY ), [Duplicate Invoices], CALCULATE ( [Duplicate Invoices], dim_date[fiscal_year] = FY ) ) + 0
 			RETURN
 				IF (
 					ISBLANK ( WName ),

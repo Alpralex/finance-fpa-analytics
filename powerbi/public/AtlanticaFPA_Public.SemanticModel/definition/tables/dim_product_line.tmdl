@@ -2,6 +2,7 @@ table dim_product_line
 	lineageTag: 35370d38-52c0-435b-af32-abc794c6499b
 
 	column product_line_id
+		isHidden
 		dataType: string
 		isKey
 		lineageTag: 7accadc8-beb5-4f56-9925-0bcccd6ae6da

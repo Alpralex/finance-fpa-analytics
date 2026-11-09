@@ -2,6 +2,7 @@ table dim_account
 	lineageTag: ddc96445-43ae-4faf-ab11-08aaf17e0cdb
 
 	column account_id
+		isHidden
 		dataType: string
 		isKey
 		lineageTag: cb7de384-25bd-4a11-97cd-d2533f2616ca

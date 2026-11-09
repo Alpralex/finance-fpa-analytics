@@ -2,6 +2,7 @@ table dim_cost_centre
 	lineageTag: cdf746d5-0223-46ba-8560-a76c509911c2
 
 	column cost_centre_id
+		isHidden
 		dataType: string
 		isKey
 		lineageTag: 89f96284-48a1-4f01-a707-415e5306ad54

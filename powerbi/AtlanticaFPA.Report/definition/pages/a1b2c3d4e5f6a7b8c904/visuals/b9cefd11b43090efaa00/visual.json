@@ -3,9 +3,9 @@
   "name": "b9cefd11b43090efaa00",
   "position": {
     "x": 16,
-    "y": 592,
+    "y": 599,
     "z": 4000,
-    "height": 112,
+    "height": 105,
     "width": 232,
     "tabOrder": 4000
   },
@@ -79,7 +79,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#5D6876'"
+                      "Value": "'#3B434B'"
                     }
                   }
                 }

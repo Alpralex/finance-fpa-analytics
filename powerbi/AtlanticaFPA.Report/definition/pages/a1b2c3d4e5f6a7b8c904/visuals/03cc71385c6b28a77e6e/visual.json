@@ -3,9 +3,9 @@
   "name": "03cc71385c6b28a77e6e",
   "position": {
     "x": 16,
-    "y": 58,
+    "y": 124,
     "z": 7000,
-    "height": 40,
+    "height": 18,
     "width": 720,
     "tabOrder": 7000
   },
@@ -22,8 +22,8 @@
                     "value": "Operating costs by cost centre, outbound freight in Portugal and the ledger checks",
                     "textStyle": {
                       "fontFamily": "Segoe UI",
-                      "fontSize": "13px",
-                      "color": "#5D6876"
+                      "fontSize": "10px",
+                      "color": "#3B434B"
                     }
                   }
                 ],

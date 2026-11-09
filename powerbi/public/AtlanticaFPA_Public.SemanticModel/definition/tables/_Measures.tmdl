@@ -46,6 +46,7 @@ table _Measures
 		displayFolder: 1 Base
 		lineageTag: cd7c634f-35de-4cb6-8b01-aae98a086371
 
+	/// Actual amount in the same period of the previous fiscal year.
 	measure 'Prior Year' = CALCULATE ( [Actual], SAMEPERIODLASTYEAR ( dim_date[date_day] ) )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 1 Base
@@ -69,11 +70,13 @@ table _Measures
 		displayFolder: 1 Base
 		lineageTag: bebf43b5-3342-47a2-89b7-7a342bbf10e8
 
+	/// Actual minus prior-year actual.
 	measure 'Var vs PY' = IF ( NOT ISBLANK ( [Actual] ), [Actual] - [Prior Year] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 1 Base
 		lineageTag: 8db9165f-7eba-4405-be5f-c58dde322f6a
 
+	/// Change against the prior year as a share of the prior year (absolute base, so cost lines keep the sign).
 	measure 'Var vs PY %' = DIVIDE ( [Var vs PY], ABS ( [Prior Year] ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 1 Base
@@ -91,31 +94,37 @@ table _Measures
 		displayFolder: 2 YTD and full year
 		lineageTag: 6d8b4b4b-2426-47e3-9643-837e6b8c8858
 
+	/// Prior-year actuals over the same year-to-date window.
 	measure 'Prior Year YTD' = CALCULATE ( [Prior Year], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: 522be5a5-8ce7-4042-a35a-bc1ba13c7eb6
 
+	/// Year-to-date actuals translated at budget FX rates.
 	measure 'Actual at Budget FX YTD' = CALCULATE ( [Actual at Budget FX], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: c61cec6e-fa46-4274-b187-44cd7ca9c156
 
+	/// Year-to-date actuals minus actuals at budget FX: the part of the variance that currency explains.
 	measure 'FX Effect YTD' = [Actual YTD] - [Actual at Budget FX YTD]
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: 867426b3-077e-4531-b18d-06941d95b820
 
+	/// Year-to-date actuals minus year-to-date budget.
 	measure 'Var vs Budget YTD' = IF ( NOT ISBLANK ( [Actual YTD] ), [Actual YTD] - [Budget YTD] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: 5404e4d7-c92f-4a7f-b4e2-70e9c5abd47d
 
+	/// Year-to-date variance to budget as a share of the budget (absolute base, so cost lines keep the sign).
 	measure 'Var vs Budget YTD %' = DIVIDE ( [Var vs Budget YTD], ABS ( [Budget YTD] ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 2 YTD and full year
 		lineageTag: 58e02e91-b8a3-432a-b1db-f8f7a6622e40
 
+	/// Year-to-date change against the prior year as a share of the prior year.
 	measure 'Var vs PY YTD %' = DIVIDE ( [Actual YTD] - [Prior Year YTD], ABS ( [Prior Year YTD] ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 2 YTD and full year
@@ -125,7 +134,7 @@ table _Measures
 	measure 'Full Year Budget' =
 			VAR _Year = MAX ( dim_date[fiscal_year] )
 			RETURN
-				CALCULATE ( [Budget], REMOVEFILTERS ( dim_date ), dim_date[fiscal_year] = _Year )
+				CALCULATE ( [Budget], REMOVEFILTERS ( dim_date ), REMOVEFILTERS ( Period ), dim_date[fiscal_year] = _Year )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: 659bc233-6481-43b1-afbf-74b77ebd332e
@@ -134,51 +143,60 @@ table _Measures
 	measure 'Full Year Forecast' =
 			VAR _Year = MAX ( dim_date[fiscal_year] )
 			RETURN
-				CALCULATE ( [Forecast 9+3], REMOVEFILTERS ( dim_date ), dim_date[fiscal_year] = _Year )
+				CALCULATE ( [Forecast 9+3], REMOVEFILTERS ( dim_date ), REMOVEFILTERS ( Period ), dim_date[fiscal_year] = _Year )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: 5e47cb36-b4a2-43bd-acc5-7088ede46e3c
 
+	/// Full-year forecast minus full-year budget.
 	measure 'Full Year Forecast vs Budget' = [Full Year Forecast] - [Full Year Budget]
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 2 YTD and full year
 		lineageTag: 471f9b0c-1111-474a-bf64-81b0a74a4a44
 
+	/// Full-year forecast variance as a share of the full-year budget.
 	measure 'Full Year Forecast vs Budget %' = DIVIDE ( [Full Year Forecast vs Budget], ABS ( [Full Year Budget] ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 2 YTD and full year
 		lineageTag: c2a170e8-a79a-4034-93fe-1a0841a11500
 
+	/// Actuals on the Net revenue group of the P&L.
 	measure 'Net Revenue' = CALCULATE ( [Actual], dim_account[pnl_group] = "Net revenue" )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 170eb25d-ff76-4cac-85db-8b7b4c4235a4
 
+	/// Budget on the Net revenue group of the P&L.
 	measure 'Net Revenue Budget' = CALCULATE ( [Budget], dim_account[pnl_group] = "Net revenue" )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 409dd7d6-0d74-4910-b582-d5c2e2807f54
 
+	/// Year-to-date actual net revenue.
 	measure 'Net Revenue YTD' = CALCULATE ( [Actual YTD], dim_account[pnl_group] = "Net revenue" )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: f0767d63-6799-448a-9c66-49003b1f6fd1
 
+	/// Year-to-date budget net revenue.
 	measure 'Net Revenue Budget YTD' = CALCULATE ( [Budget YTD], dim_account[pnl_group] = "Net revenue" )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 910e0408-b431-4a69-8428-11a4f123ce2a
 
+	/// Year-to-date net revenue variance to budget, as a share of budget.
 	measure 'Net Revenue Var vs Budget YTD %' = CALCULATE ( [Var vs Budget YTD %], dim_account[pnl_group] = "Net revenue" )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 3 KPIs
 		lineageTag: f8498a88-90dd-4f88-8ad1-30fabe6f2deb
 
+	/// Year-to-date net revenue change against the prior year.
 	measure 'Net Revenue Var vs PY YTD %' = CALCULATE ( [Var vs PY YTD %], dim_account[pnl_group] = "Net revenue" )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 3 KPIs
 		lineageTag: d402299e-87eb-42ae-a474-13fa612ecaf8
 
+	/// Part of the year-to-date net revenue variance explained by currency.
 	measure 'Net Revenue FX Effect YTD' = CALCULATE ( [FX Effect YTD], dim_account[pnl_group] = "Net revenue" )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
@@ -190,36 +208,43 @@ table _Measures
 		displayFolder: 3 KPIs
 		lineageTag: 2929b76d-d045-4d8d-8eb8-663588bb0420
 
+	/// Budget up to the Gross margin subtotal.
 	measure 'Gross Margin Budget' = CALCULATE ( [Budget], dim_account[pnl_subtotal] = "Gross margin" )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 9788bfb4-a4b1-4bed-b26a-3ea8eb094fb3
 
+	/// Gross margin as a share of net revenue.
 	measure 'Gross Margin %' = DIVIDE ( [Gross Margin], [Net Revenue] )
 		formatString: 0.0%
 		displayFolder: 3 KPIs
 		lineageTag: d7bce715-27dd-4f92-9ced-9d34efda003e
 
+	/// Budgeted gross margin as a share of budgeted net revenue.
 	measure 'Gross Margin % Budget' = DIVIDE ( [Gross Margin Budget], [Net Revenue Budget] )
 		formatString: 0.0%
 		displayFolder: 3 KPIs
 		lineageTag: 80029fd6-ae6d-4303-bbe6-462bdd4c19ba
 
+	/// Year-to-date actual gross margin.
 	measure 'Gross Margin YTD' = CALCULATE ( [Actual YTD], dim_account[pnl_subtotal] = "Gross margin" )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 1588e9f1-5009-4cda-a787-ec2b640c2e85
 
+	/// Year-to-date budget gross margin.
 	measure 'Gross Margin Budget YTD' = CALCULATE ( [Budget YTD], dim_account[pnl_subtotal] = "Gross margin" )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 638f76f8-e89d-4ec5-aeac-1b084e3a4678
 
+	/// Year-to-date gross margin as a share of year-to-date net revenue.
 	measure 'Gross Margin % YTD' = DIVIDE ( [Gross Margin YTD], [Net Revenue YTD] )
 		formatString: 0.0%
 		displayFolder: 3 KPIs
 		lineageTag: cbaa234a-0e69-4676-b042-915f7ec66bda
 
+	/// Year-to-date budgeted gross margin as a share of budgeted net revenue.
 	measure 'Gross Margin % Budget YTD' = DIVIDE ( [Gross Margin Budget YTD], [Net Revenue Budget YTD] )
 		formatString: 0.0%
 		displayFolder: 3 KPIs
@@ -231,51 +256,61 @@ table _Measures
 		displayFolder: 3 KPIs
 		lineageTag: a78b08da-b39c-4f83-bc2a-1cbd0bc65aa0
 
+	/// Budget up to the EBITDA subtotal.
 	measure 'EBITDA Budget' = CALCULATE ( [Budget], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 73b7184f-c7d7-46a9-ad91-e917181d14ce
 
+	/// EBITDA as a share of net revenue.
 	measure 'EBITDA %' = DIVIDE ( [EBITDA], [Net Revenue] )
 		formatString: 0.0%
 		displayFolder: 3 KPIs
 		lineageTag: fa5e77e9-f3ba-4a3c-962a-ce8021679f29
 
+	/// Forecast 9+3 up to the EBITDA subtotal.
 	measure 'EBITDA Forecast 9+3' = CALCULATE ( [Forecast 9+3], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 83b8e3e3-7d98-4b87-a362-29e6c5eab843
 
+	/// Year-to-date actual EBITDA.
 	measure 'EBITDA YTD' = CALCULATE ( [Actual YTD], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 10583567-c4d3-4a35-b761-599a5ccb9b69
 
+	/// Year-to-date budget EBITDA.
 	measure 'EBITDA Budget YTD' = CALCULATE ( [Budget YTD], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: bffb8906-ce85-4ae5-b9db-7d0b24b8073b
 
+	/// Year-to-date EBITDA minus year-to-date budget EBITDA.
 	measure 'EBITDA Var vs Budget YTD' = [EBITDA YTD] - [EBITDA Budget YTD]
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 156c063d-3672-4235-866f-4a93767858ef
 
+	/// Year-to-date EBITDA as a share of year-to-date net revenue.
 	measure 'EBITDA % YTD' = DIVIDE ( [EBITDA YTD], [Net Revenue YTD] )
 		formatString: 0.0%
 		displayFolder: 3 KPIs
 		lineageTag: c5cb61c6-758f-4326-9960-6c62605a58be
 
+	/// Part of the year-to-date EBITDA variance explained by currency.
 	measure 'EBITDA FX Effect YTD' = CALCULATE ( [FX Effect YTD], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 20b5307c-f37e-4e70-8dfd-0022096a5af5
 
+	/// Full-year forecast 9+3 up to the EBITDA subtotal.
 	measure 'Full Year Forecast EBITDA' = CALCULATE ( [Full Year Forecast], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
 		lineageTag: 39071619-4b0e-4dac-8929-02d26bfe01b9
 
+	/// Full-year budget up to the EBITDA subtotal.
 	measure 'Full Year Budget EBITDA' = CALCULATE ( [Full Year Budget], dim_account[pnl_subtotal] IN { "Gross margin", "EBITDA" } )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 3 KPIs
@@ -431,36 +466,43 @@ table _Measures
 		displayFolder: 4 P&L matrix
 		lineageTag: 59cef8bd-bf60-47f7-bc3d-e861b94fb116
 
+	/// P&L line actuals minus budget.
 	measure 'PL Var vs Budget' = IF ( NOT ISBLANK ( [PL Actual] ), [PL Actual] - [PL Budget] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 4 P&L matrix
 		lineageTag: 62d00189-5a5d-40d7-b4c6-701ff28c95be
 
+	/// P&L line variance to budget as a share of the budget.
 	measure 'PL Var vs Budget %' = DIVIDE ( [PL Var vs Budget], ABS ( [PL Budget] ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 4 P&L matrix
 		lineageTag: 19d07536-405a-4579-844d-0bb0cd3cc57b
 
+	/// P&L line change against the prior year, as a share of the prior year.
 	measure 'PL Var vs PY %' = IF ( NOT ISBLANK ( [PL Actual] ), DIVIDE ( [PL Actual] - [PL Prior Year], ABS ( [PL Prior Year] ) ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 4 P&L matrix
 		lineageTag: 75e0eee8-3222-442b-a1d4-3d78c1acb476
 
+	/// Year-to-date P&L line actuals minus budget.
 	measure 'PL Var vs Budget YTD' = IF ( NOT ISBLANK ( [PL Actual YTD] ), [PL Actual YTD] - [PL Budget YTD] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 4 P&L matrix
 		lineageTag: 01caec38-2766-49a7-a5a7-729a2ab32d48
 
+	/// Year-to-date P&L line variance to budget as a share of the budget.
 	measure 'PL Var vs Budget YTD %' = DIVIDE ( [PL Var vs Budget YTD], ABS ( [PL Budget YTD] ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 4 P&L matrix
 		lineageTag: 0187f5fa-ab13-4424-ab81-d38d810a5048
 
+	/// Year-to-date P&L line change against the prior year.
 	measure 'PL Var vs PY YTD %' = IF ( NOT ISBLANK ( [PL Actual YTD] ), DIVIDE ( [PL Actual YTD] - [PL Prior Year YTD], ABS ( [PL Prior Year YTD] ) ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 4 P&L matrix
 		lineageTag: 01e87261-ad44-4721-bea9-a29e4ee64a09
 
+	/// Full-year forecast minus full-year budget for the P&L line.
 	measure 'PL FY Forecast vs Budget' = [PL Full Year Forecast] - [PL Full Year Budget]
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 4 P&L matrix
@@ -472,6 +514,7 @@ table _Measures
 		displayFolder: 4 P&L matrix
 		lineageTag: c0eb85b5-cf97-45fa-9adf-00879dc5a18e
 
+	/// Year-to-date P&L line actuals as a share of year-to-date net revenue.
 	measure 'PL % of Net Revenue YTD' = IF ( NOT ISBLANK ( [PL Actual YTD] ), DIVIDE ( [PL Actual YTD], [Net Revenue YTD] ) )
 		formatString: 0.0%
 		displayFolder: 4 P&L matrix
@@ -483,6 +526,7 @@ table _Measures
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: 9cae9fe8-3d23-4243-a327-84497c5d1c61
 
+	/// Budgeted units for the fiscal year(s) in scope.
 	measure 'Units Budget' =
 			SUMX (
 				VALUES ( dim_date[fiscal_year] ),
@@ -494,16 +538,19 @@ table _Measures
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: d48f8355-fa1e-4228-981e-806c25310dd7
 
+	/// Units sold against budget, as a share of budget.
 	measure 'Units Var vs Budget %' = IF ( NOT ISBLANK ( [Units Actual] ), DIVIDE ( [Units Actual] - [Units Budget], [Units Budget] ) )
 		formatString: +0.0%;-0.0%;0.0%
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: e04bfd7f-4749-4d0e-af53-d2f8d688ec66
 
+	/// Year-to-date units sold through the last closed month.
 	measure 'Units Actual YTD' = CALCULATE ( [Units Actual], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
 		formatString: #,0
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: c2f41d0b-bf57-40c8-ac60-22a6b3a4f6b3
 
+	/// Year-to-date budgeted units through the last closed month.
 	measure 'Units Budget YTD' = CALCULATE ( [Units Budget], DATESYTD ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
 		formatString: #,0
 		displayFolder: 5 Volume and margin PVM
@@ -515,6 +562,7 @@ table _Measures
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: 8a308cd6-57bf-4756-b6e8-ab11405efc48
 
+	/// Actual product margin in EUR from the price-volume-mix mart.
 	measure 'Product Margin Actual' = SUM ( mart_margin_pvm[actual_margin_eur] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 5 Volume and margin PVM
@@ -526,26 +574,31 @@ table _Measures
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: 6e896e97-5beb-4265-be0e-80318a5805cd
 
+	/// Margin variance explained by selling more or fewer units at budget mix and price.
 	measure 'Volume Effect' = SUM ( mart_margin_pvm[volume_eur] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: ed70dd8c-1a41-4edc-8c4f-5f31d78808e1
 
+	/// Margin variance explained by a different product mix at budget unit margins.
 	measure 'Mix Effect' = SUM ( mart_margin_pvm[mix_eur] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: 62a1a039-91f2-4a18-834b-a67cbaa246fa
 
+	/// Margin variance explained by selling prices different from budget.
 	measure 'Price Effect' = SUM ( mart_margin_pvm[price_eur] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: b461e6cf-cd99-43d2-93b9-08f84d4b4495
 
+	/// Margin variance explained by unit costs different from budget.
 	measure 'Unit Cost Effect' = SUM ( mart_margin_pvm[cost_eur] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 5 Volume and margin PVM
 		lineageTag: 88407a91-48f1-4b10-95cf-bf936aee88f3
 
+	/// Margin variance explained by currency rates different from budget.
 	measure 'Margin FX Effect' = SUM ( mart_margin_pvm[fx_eur] )
 		formatString: \€#,0;-\€#,0;\€0
 		displayFolder: 5 Volume and margin PVM
@@ -557,16 +610,19 @@ table _Measures
 		displayFolder: 6 Bridge and checks
 		lineageTag: 87a20159-87e5-4b52-b411-808a25367a56
 
+	/// Journal lines flagged by the control checks (duplicates, round amounts, weekend postings, and so on).
 	measure 'Journal Exceptions' = COUNTROWS ( mart_journal_checks )
 		formatString: 0
 		displayFolder: 6 Bridge and checks
 		lineageTag: 70afa1a3-a21a-4f1e-8be6-5e172a28e767
 
+	/// Journal lines flagged as a duplicate invoice.
 	measure 'Duplicate Invoices' = CALCULATE ( COUNTROWS ( mart_journal_checks ), mart_journal_checks[check_type] = "duplicate_invoice" )
 		formatString: 0
 		displayFolder: 6 Bridge and checks
 		lineageTag: 867ab335-2c93-47c3-8c53-5530b1368d0e
 
+	/// Local-currency amount of the flagged journal lines.
 	measure 'Exception Amount LC' = SUM ( mart_journal_checks[amount_lc] )
 		formatString: #,0
 		displayFolder: 6 Bridge and checks
@@ -587,3 +643,156 @@ table _Measures
 				in
 					Source
 
+	/// One-sentence answer for the P&L page: revenue and EBITDA against budget and the entity furthest behind.
+	measure 'Headline PL' =
+			VAR NR = [Net Revenue Var vs Budget YTD %]
+			VAR EV = [EBITDA Var vs Budget YTD]
+			VAR EVp = DIVIDE ( EV, ABS ( [EBITDA Budget YTD] ) )
+			VAR ByEnt =
+				FILTER (
+					ADDCOLUMNS ( VALUES ( dim_entity[entity_name] ), "@v", [EBITDA Var vs Budget YTD] ),
+					NOT ISBLANK ( [@v] )
+				)
+			VAR W = TOPN ( 1, ByEnt, [@v], ASC )
+			VAR WV = MAXX ( W, [@v] )
+			RETURN
+				IF (
+					ISBLANK ( [Net Revenue YTD] ),
+					"No actuals in this selection.",
+					"Net revenue " & FORMAT ( NR, "+0.0%;-0.0%" ) & " and EBITDA " & IF ( EV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( EV ) / 1000, "#,0" ) & "k"
+						& " (" & FORMAT ( EVp, "+0.0%;-0.0%" ) & ") against budget, year to date"
+						& IF (
+							COUNTROWS ( ByEnt ) > 1,
+							". Furthest behind: " & MAXX ( W, dim_entity[entity_name] ) & " at " & IF ( WV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( WV ) / 1000, "#,0" ) & "k" & " EBITDA.",
+							"."
+						)
+				)
+		isHidden
+		displayFolder: Story
+		lineageTag: fc0c1cdd-794d-5f8b-b70e-bc859d6cdaa7
+
+	/// One-sentence answer for the EBITDA bridge page: actual against budget and the largest step each way.
+	measure 'Headline Bridge' =
+			VAR Steps =
+				FILTER (
+					ADDCOLUMNS ( VALUES ( mart_ebitda_bridge[step] ), "@v", [Bridge Amount] ),
+					NOT ( mart_ebitda_bridge[step] IN { "Budget EBITDA", "Actual EBITDA" } ) && NOT ISBLANK ( [@v] )
+				)
+			VAR Up = TOPN ( 1, Steps, [@v], DESC )
+			VAR Dn = TOPN ( 1, Steps, [@v], ASC )
+			VAR UpV = MAXX ( Up, [@v] )
+			VAR DnV = MAXX ( Dn, [@v] )
+			VAR B = CALCULATE ( [Bridge Amount], mart_ebitda_bridge[step] = "Budget EBITDA" )
+			VAR A = CALCULATE ( [Bridge Amount], mart_ebitda_bridge[step] = "Actual EBITDA" )
+			RETURN
+				IF (
+					ISBLANK ( A ),
+					"No bridge for this selection.",
+					"EBITDA " & "€" & FORMAT ( A / 1000000, "0.00" ) & "m" & " against a budget of " & "€" & FORMAT ( B / 1000000, "0.00" ) & "m" & ". Biggest lift: "
+						& MAXX ( Up, mart_ebitda_bridge[step] ) & ", " & IF ( UpV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( UpV ) / 1000, "#,0" ) & "k" & ". Biggest drag: "
+						& MAXX ( Dn, mart_ebitda_bridge[step] ) & ", " & IF ( DnV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( DnV ) / 1000, "#,0" ) & "k" & "."
+				)
+		isHidden
+		displayFolder: Story
+		lineageTag: 6d4fd4fb-70d5-575d-be18-def296e778c6
+
+	/// One-sentence answer for the Margin PVM page: product margin variance and its largest driver each way.
+	measure 'Headline PVM' =
+			VAR T =
+				{
+					( "Volume", [Volume Effect] ),
+					( "Mix", [Mix Effect] ),
+					( "Price", [Price Effect] ),
+					( "Unit cost", [Unit Cost Effect] ),
+					( "FX", [Margin FX Effect] )
+				}
+			VAR Up = TOPN ( 1, T, [Value2], DESC )
+			VAR Dn = TOPN ( 1, T, [Value2], ASC )
+			VAR UpV = MAXX ( Up, [Value2] )
+			VAR DnV = MAXX ( Dn, [Value2] )
+			VAR PMV = [Product Margin Var]
+			RETURN
+				IF (
+					ISBLANK ( PMV ),
+					"No product margin in this selection.",
+					"Product margin " & IF ( PMV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( PMV ) / 1000, "#,0" ) & "k" & " against budget. Biggest driver: " & MAXX ( Up, [Value1] ) & ", "
+						& IF ( UpV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( UpV ) / 1000, "#,0" ) & "k" & ". Biggest drag: " & MAXX ( Dn, [Value1] ) & ", " & IF ( DnV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( DnV ) / 1000, "#,0" ) & "k" & "."
+				)
+		isHidden
+		displayFolder: Story
+		lineageTag: 68244419-fd38-5abb-9254-808dea70dacf
+
+	/// One-sentence answer for the Cost centres and checks page: the cost line furthest off budget and the ledger exceptions.
+	measure 'Headline Checks' =
+			VAR Acc =
+				FILTER (
+					ADDCOLUMNS (
+						CALCULATETABLE ( VALUES ( dim_account[account_name] ), dim_account[is_revenue] = FALSE () ),
+						"@p", [Var vs Budget YTD %],
+						"@v", [Var vs Budget YTD]
+					),
+					NOT ISBLANK ( [@p] )
+				)
+			VAR W = TOPN ( 1, Acc, [@p], ASC )
+			VAR WName = MAXX ( W, dim_account[account_name] )
+			VAR WV = MAXX ( W, [@v] )
+			VAR Ent =
+				FILTER (
+					ADDCOLUMNS (
+						VALUES ( dim_entity[entity_name] ),
+						"@e", CALCULATE ( [Var vs Budget YTD], dim_account[account_name] = WName )
+					),
+					NOT ISBLANK ( [@e] )
+				)
+			VAR WE = TOPN ( 1, Ent, [@e], ASC )
+			VAR WEV = MAXX ( WE, [@e] )
+			VAR FY = IF ( ISFILTERED ( dim_date[fiscal_year] ), BLANK (), CALCULATE ( MAX ( dim_date[fiscal_year] ), ALL ( dim_date ), dim_date[is_closed] = TRUE () ) )
+			VAR Ex = IF ( ISBLANK ( FY ), [Journal Exceptions], CALCULATE ( [Journal Exceptions], dim_date[fiscal_year] = FY ) ) + 0
+			VAR Dup = IF ( ISBLANK ( FY ), [Duplicate Invoices], CALCULATE ( [Duplicate Invoices], dim_date[fiscal_year] = FY ) ) + 0
+			RETURN
+				IF (
+					ISBLANK ( WName ),
+					"No costs in this selection.",
+					WName & " is the cost line furthest off budget: " & FORMAT ( MAXX ( W, [@p] ), "+0.0%;-0.0%" ) & " ("
+						& IF ( WV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( WV ) / 1000, "#,0" ) & "k" & ") year to date"
+						& IF ( COUNTROWS ( Ent ) > 1, ", worst in " & MAXX ( WE, dim_entity[entity_name] ) & " (" & IF ( WEV < 0, "-", "+" ) & "€" & FORMAT ( ABS ( WEV ) / 1000, "#,0" ) & "k" & ")", "" )
+						& ". The ledger checks flag " & Ex & " exception" & IF ( Ex <> 1, "s", "" ) & ", including " & Dup
+						& " duplicate invoice" & IF ( Dup <> 1, "s", "" ) & "."
+				)
+		isHidden
+		displayFolder: Story
+		lineageTag: c6f76f7f-c44a-5794-891a-717929da79df
+
+	/// Title of the P&L matrix; follows the Period calculation group.
+	measure 'PL Matrix Title' =
+			VAR P = SELECTEDVALUE ( Period[Period], "Year to date" )
+			RETURN
+				"P&L against budget, " & SWITCH ( P, "Month", "last closed month", "Quarter to date", "quarter to date", "year to date" )
+		isHidden
+		displayFolder: Story
+		lineageTag: 6e1e190e-64fd-5ed7-93b0-3b9ceb2dd906
+
+	/// Subtitle of the P&L matrix.
+	measure 'PL Matrix Subtitle' =
+			VAR D = CALCULATE ( MAX ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+			RETURN
+				"€ thousands. Actuals to " & FORMAT ( D, "mmmm yyyy" )
+					& ". Green is favourable on every line. Switch the period at the right; hover a line to see it by entity"
+		isHidden
+		displayFolder: Story
+		lineageTag: 19ff8ded-9bbe-5675-b48a-9a107f9d5c4d
+
+	/// 1 on subtotal rows of the P&L matrix: drives the shaded rows (a measure, so the model can discourage implicit measures).
+	measure 'PL Is Subtotal' =
+			MAX ( pnl_layout[is_subtotal] )
+		formatString: 0
+		isHidden
+		displayFolder: Story
+		lineageTag: ed82a889-0346-5c6f-9e0e-61677b5edb73
+
+	/// Bar colour for the P&L line tooltip: green when favourable, red when not.
+	measure 'PL Var Colour' =
+			IF ( [PL Var vs Budget] < 0, "#B42318", "#1F6B3A" )
+		isHidden
+		displayFolder: Story
+		lineageTag: a17a83dc-fc9c-53d0-aca1-941a28de1ed1

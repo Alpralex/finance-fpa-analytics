@@ -1,5 +1,6 @@
 model Model
 	culture: en-US
+	discourageImplicitMeasures
 	defaultPowerBIDataSourceVersion: powerBI_V3
 	sourceQueryCulture: en-US
 	dataAccessOptions
@@ -17,6 +18,7 @@ ref table dim_account
 ref table dim_cost_centre
 ref table dim_product_line
 ref table pnl_layout
+ref table Period
 ref table fct_actuals
 ref table fct_plan
 ref table fct_sales_volume

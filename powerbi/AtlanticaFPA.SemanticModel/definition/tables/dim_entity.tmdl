@@ -2,6 +2,7 @@ table dim_entity
 	lineageTag: 791f671a-c52e-4ce8-97fa-c176ae86f286
 
 	column entity_id
+		isHidden
 		dataType: string
 		isKey
 		lineageTag: 0683dd4c-7ea2-408f-85f2-262a452daa9b

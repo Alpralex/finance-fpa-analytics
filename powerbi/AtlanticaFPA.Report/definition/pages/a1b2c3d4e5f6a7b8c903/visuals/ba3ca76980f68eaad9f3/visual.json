@@ -3,9 +3,9 @@
   "name": "ba3ca76980f68eaad9f3",
   "position": {
     "x": 16,
-    "y": 58,
+    "y": 124,
     "z": 5000,
-    "height": 40,
+    "height": 18,
     "width": 720,
     "tabOrder": 5000
   },
@@ -19,11 +19,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "Product margin, budget to actual, split into volume, mix, price, unit cost and FX",
+                    "value": "Product margin, budget to actual, split into volume, mix, price, unit cost and FX (closed months of 2026 only)",
                     "textStyle": {
                       "fontFamily": "Segoe UI",
-                      "fontSize": "13px",
-                      "color": "#5D6876"
+                      "fontSize": "10px",
+                      "color": "#3B434B"
                     }
                   }
                 ],

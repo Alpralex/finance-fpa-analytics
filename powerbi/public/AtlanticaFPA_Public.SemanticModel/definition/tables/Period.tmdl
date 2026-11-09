@@ -1,0 +1,45 @@
+/// Calculation group for the P&L matrix: the same measures for the last closed month, quarter to date or year to date.
+/// Every item stops at the last closed month in context, so actual and budget always cover the same months.
+table Period
+	lineageTag: 90472947-e59a-5871-be70-ccf4b10c2aa6
+
+	calculationGroup
+
+		calculationItem 'Month' =
+				VAR _d = CALCULATE ( MAX ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+				RETURN
+					IF ( NOT ISBLANK ( _d ), CALCULATE ( SELECTEDMEASURE (), DATESBETWEEN ( dim_date[date_day], EOMONTH ( _d, -1 ) + 1, _d ) ) )
+			ordinal: 0
+
+		calculationItem 'Quarter to date' =
+				VAR _d = CALCULATE ( MAX ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+				RETURN
+					IF ( NOT ISBLANK ( _d ), CALCULATE ( SELECTEDMEASURE (), DATESBETWEEN ( dim_date[date_day], DATE ( YEAR ( _d ), ROUNDUP ( MONTH ( _d ) / 3, 0 ) * 3 - 2, 1 ), _d ) ) )
+			ordinal: 1
+
+		calculationItem 'Year to date' =
+				VAR _d = CALCULATE ( MAX ( dim_date[date_day] ), dim_date[is_closed] = TRUE () )
+				RETURN
+					IF ( NOT ISBLANK ( _d ), CALCULATE ( SELECTEDMEASURE (), DATESBETWEEN ( dim_date[date_day], DATE ( YEAR ( _d ), 1, 1 ), _d ) ) )
+			ordinal: 2
+
+	column Period
+		dataType: string
+		lineageTag: 20b8a907-051a-556d-9e1b-782fd8ab09a7
+		summarizeBy: none
+		sourceColumn: Name
+		sortByColumn: 'Period Order'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Period Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 28a5b5a2-59fa-52ca-a6ae-eb13131648ba
+		summarizeBy: none
+		sourceColumn: Ordinal
+
+		annotation SummarizationSetBy = User
+
+	partition Period = calculationGroup

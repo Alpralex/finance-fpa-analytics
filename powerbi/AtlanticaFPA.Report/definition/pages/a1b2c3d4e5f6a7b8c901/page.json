@@ -14,7 +14,7 @@
               "color": {
                 "expr": {
                   "Literal": {
-                    "Value": "'#F7F8F9'"
+                    "Value": "'#C4CBD2'"
                   }
                 }
               }
@@ -38,7 +38,7 @@
               "color": {
                 "expr": {
                   "Literal": {
-                    "Value": "'#F7F8F9'"
+                    "Value": "'#C4CBD2'"
                   }
                 }
               }
@@ -54,5 +54,32 @@
         }
       }
     ]
-  }
+  },
+  "visualInteractions": [
+    {
+      "source": "c2264cba3e6ffa2c916e",
+      "target": "db5e04363b7b2d846f17",
+      "type": "NoFilter"
+    },
+    {
+      "source": "c2264cba3e6ffa2c916e",
+      "target": "3fcb702f86947417ddc7",
+      "type": "NoFilter"
+    },
+    {
+      "source": "c2264cba3e6ffa2c916e",
+      "target": "57c437e904a7242b9a3b",
+      "type": "NoFilter"
+    },
+    {
+      "source": "c2264cba3e6ffa2c916e",
+      "target": "958e02a01bb731c7346a",
+      "type": "NoFilter"
+    },
+    {
+      "source": "c2264cba3e6ffa2c916e",
+      "target": "960a62f0eb92377b4443",
+      "type": "NoFilter"
+    }
+  ]
 }

@@ -3,9 +3,9 @@
   "name": "faa4306b4d4edc8c04a5",
   "position": {
     "x": 16,
-    "y": 56,
+    "y": 52,
     "z": 6000,
-    "height": 38,
+    "height": 28,
     "width": 720,
     "tabOrder": 6000
   },
@@ -22,7 +22,7 @@
                     "value": "Is the group ahead of budget?",
                     "textStyle": {
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "22px",
+                      "fontSize": "16px",
                       "color": "#182027"
                     }
                   }

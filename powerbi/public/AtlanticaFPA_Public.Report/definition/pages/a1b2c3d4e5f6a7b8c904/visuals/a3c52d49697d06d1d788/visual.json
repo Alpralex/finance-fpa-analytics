@@ -3,9 +3,9 @@
   "name": "a3c52d49697d06d1d788",
   "position": {
     "x": 16,
-    "y": 56,
+    "y": 52,
     "z": 6000,
-    "height": 38,
+    "height": 28,
     "width": 720,
     "tabOrder": 6000
   },
@@ -22,7 +22,7 @@
                     "value": "Where are costs over budget, and what must be fixed before close?",
                     "textStyle": {
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "22px",
+                      "fontSize": "16px",
                       "color": "#182027"
                     }
                   }

@@ -3,9 +3,9 @@
   "name": "ce43b72641b6d4c88f9d",
   "position": {
     "x": 16,
-    "y": 56,
+    "y": 52,
     "z": 4000,
-    "height": 38,
+    "height": 28,
     "width": 720,
     "tabOrder": 4000
   },
@@ -22,7 +22,7 @@
                     "value": "What moved EBITDA away from budget?",
                     "textStyle": {
                       "fontFamily": "Segoe UI Semibold",
-                      "fontSize": "22px",
+                      "fontSize": "16px",
                       "color": "#182027"
                     }
                   }

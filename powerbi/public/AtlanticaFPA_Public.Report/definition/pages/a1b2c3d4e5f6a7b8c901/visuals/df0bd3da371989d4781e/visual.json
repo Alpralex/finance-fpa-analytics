@@ -3,9 +3,9 @@
   "name": "df0bd3da371989d4781e",
   "position": {
     "x": 16,
-    "y": 94,
+    "y": 80,
     "z": 7000,
-    "height": 24,
+    "height": 18,
     "width": 720,
     "tabOrder": 7000
   },
@@ -22,7 +22,7 @@
                     "value": "Atlântica Components, budget vs actual, year to date to the last closed month (September 2026)",
                     "textStyle": {
                       "fontFamily": "Segoe UI",
-                      "fontSize": "12px",
+                      "fontSize": "10px",
                       "color": "#3B434B"
                     }
                   }

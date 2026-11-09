@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Product margin, budget to actual, split into volume, mix, price, unit cost and FX",
+                    "value": "Product margin, budget to actual, split into volume, mix, price, unit cost and FX (closed months of 2026 only)",
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "10px",

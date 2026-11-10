@@ -139,9 +139,97 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
 .line .bar { display: inline-block; height: 10px; border-radius: 1px; vertical-align: middle; }
 </style>
 
+<style id="i18n-style">
+.crumb { max-width: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.4rem; }
+.lang-sw { margin-left: auto; display: inline-flex; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
+.lang-sw button { font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; background: var(--sheet); color: var(--ink); border: 0; border-right: 1px solid var(--rule); cursor: pointer; }
+.lang-sw button:last-child { border-right: 0; }
+.lang-sw button[aria-pressed="true"] { background: var(--signal-soft); box-shadow: inset 0 -2px 0 var(--signal); font-weight: 600; }
+.lang-sw button:focus-visible { outline: 2px solid var(--signal); outline-offset: -2px; }
+</style>
+<script id="i18n-core">
+// Language layer shared by the portfolio dashboards. English is written in the page; Portuguese (pt-PT) comes from I18N.add({...}).
+// Order of choice: ?lang= in the URL (the home page adds it), then the visitor's last choice (localStorage "lang", the same key the home page uses), then English.
+(function () {
+  var KEY = 'lang';
+  function pick() {
+    var q = null;
+    try { q = new URLSearchParams(location.search).get('lang'); } catch (e) {}
+    if (q === 'pt' || q === 'en') { try { localStorage.setItem(KEY, q); } catch (e) {} return q; }
+    try { var s = localStorage.getItem(KEY); if (s === 'pt' || s === 'en') return s; } catch (e) {}
+    try { if (/^\/pt\/?$/.test(new URL(document.referrer).pathname)) return 'pt'; } catch (e) {}
+    return 'en';
+  }
+  var I = window.I18N = { lang: pick(), dict: {}, fns: [] };
+  function norm(s) { return String(s).replace(/\s+/g, ' ').trim(); }
+  I.add = function (d) { for (var k in d) I.dict[norm(k)] = d[k]; };
+  I.pt = function () { return I.lang === 'pt'; };
+  // Inline pair for sentences whose word order differs: I18N.p('English', 'Português').
+  I.p = function (en, pt) { return I.lang === 'pt' ? pt : en; };
+  // Text: the Portuguese entry for an English string, or the string itself.
+  I.t = function (s) { if (I.lang !== 'pt') return s; var v = I.dict[norm(s)]; return v == null ? s : v; };
+  // Numbers already formatted the English way ("1,234.5") become "1 234,5" in Portuguese.
+  I.n = function (s) {
+    s = String(s); if (I.lang !== 'pt') return s;
+    return s.replace(/(\d),(?=\d{3}(?:\D|$))/g, '$1 ').replace(/(\d)\.(\d)/g, '$1,$2');
+  };
+  I.locale = function () { return I.lang === 'pt' ? 'pt-PT' : 'en-US'; };
+  I.on = function (fn) { I.fns.push(fn); };
+  var ATTRS = ['aria-label', 'title', 'placeholder'];
+  function swapAttrs(el) {
+    ATTRS.forEach(function (a) {
+      if (!el.hasAttribute(a)) return;
+      el._enA = el._enA || {};
+      if (el._enA[a] == null) { if (!(norm(el.getAttribute(a)) in I.dict)) return; el._enA[a] = el.getAttribute(a); }
+      el.setAttribute(a, I.t(el._enA[a]));
+    });
+    if (el.tagName === 'A' && (el.getAttribute('href') === '/' || el._enHref != null)) {
+      if (el._enHref == null) el._enHref = el.getAttribute('href');
+      el.setAttribute('href', I.lang === 'pt' ? '/pt/' : '/?lang=en');
+    }
+  }
+  // Static text in the page: a whole element when its markup has an entry, otherwise each text node.
+  function walk(node) {
+    for (var c = node.firstChild; c; c = c.nextSibling) {
+      if (c.nodeType === 3) {
+        if (c._en == null) { var k = norm(c.nodeValue); if (!k || !(k in I.dict)) continue; c._en = c.nodeValue; }
+        var en = c._en, lead = en.match(/^\s*/)[0], trail = en.match(/\s*$/)[0];
+        c.nodeValue = I.lang === 'pt' ? lead + I.dict[norm(en)] + trail : en;
+      } else if (c.nodeType === 1) {
+        if (/^(SCRIPT|STYLE|SVG|svg)$/.test(c.tagName) || c.hasAttribute('data-i18n-skip')) continue;
+        swapAttrs(c);
+        if (c._enH == null && c.children.length && (norm(c.innerHTML) in I.dict)) c._enH = c.innerHTML;
+        if (c._enH != null) { c.innerHTML = I.lang === 'pt' ? I.dict[norm(c._enH)] : c._enH; continue; }
+        walk(c);
+      }
+    }
+  }
+  I.apply = function () {
+    document.documentElement.lang = I.lang === 'pt' ? 'pt-PT' : 'en';
+    if (I._title == null) I._title = document.title;
+    document.title = I.t(I._title);
+    walk(document.body);
+    document.querySelectorAll('.lang-sw button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === I.lang)); });
+  };
+  I.set = function (lang) {
+    if (lang === I.lang) return;
+    I.lang = lang;
+    try { localStorage.setItem(KEY, lang); } catch (e) {}
+    try { var u = new URL(location.href); u.searchParams.set('lang', lang); history.replaceState(history.state, '', u); } catch (e) {}
+    I.apply();
+    I.fns.forEach(function (fn) { try { fn(); } catch (e) { if (window.console) console.error(e); } });
+  };
+  // Runs after the page script: translate the static text and wire the EN / PT buttons.
+  I.start = function () {
+    document.querySelectorAll('.lang-sw button').forEach(function (b) { b.addEventListener('click', function () { I.set(b.dataset.lang); }); });
+    I.apply();
+  };
+})();
+</script>
+
 <main class="wrap">
   <header>
-    <p class="crumb"><a href="/">Guilherme Rigonato</a> <span class="label">/ Projects</span></p>
+    <p class="crumb"><a href="/">Guilherme Rigonato</a> <span class="label">/ Projects</span><span class="lang-sw" role="group" aria-label="Language · Idioma" data-i18n-skip><button type="button" data-lang="en" lang="en" title="English">EN</button><button type="button" data-lang="pt" lang="pt-PT" title="Português">PT</button></span></p>
     <span class="label">Synthetic group ledger · 4 entities · Jan 2024 – Sep 2026 · EUR</span>
     <h1>Why is the group ahead of budget, and is it the good kind of ahead?</h1>
     <p>A month-end pack for the fictional distributor Atlântica Components: management P&amp;L against budget and the 9+3 reforecast, an EBITDA bridge from budget to actual, a price-volume-mix split of product margin, and the ledger exceptions to clear before close. The general ledger is double-entry and reconciled to the sales sub-ledger by automated tests.</p>
@@ -261,11 +349,179 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
   </div>
 </dialog>
 
+<script id="i18n-pt">
+I18N.add({
+"/ Projects": "/ Projetos",
+"Synthetic group ledger · 4 entities · Jan 2024 – Sep 2026 · EUR": "Contabilidade sintética de um grupo · 4 entidades · jan 2024 – set 2026 · EUR",
+"Why is the group ahead of budget, and is it the good kind of ahead?": "Porque é que o grupo está acima do orçamento, e será pelas boas razões?",
+"A month-end pack for the fictional distributor Atlântica Components: management P&L against budget and the 9+3 reforecast, an EBITDA bridge from budget to actual, a price-volume-mix split of product margin, and the ledger exceptions to clear before close. The general ledger is double-entry and reconciled to the sales sub-ledger by automated tests.": "O reporte de fecho do mês do distribuidor fictício Atlântica Components: P&L de gestão face ao orçamento e à previsão revista 9+3, ponte do EBITDA do orçamento ao real, decomposição preço-volume-mix da margem dos produtos e as exceções contabilísticas a resolver antes do fecho. A contabilidade geral é em partidas dobradas e reconciliada com o auxiliar de vendas por testes automáticos.",
+"Last closed month: September 2026": "Último mês fechado: setembro de 2026",
+"dbt + DuckDB · 18 models · 67 tests": "dbt + DuckDB · 18 modelos · 67 testes",
+"Also in Power BI and Qlik Sense": "Também em Power BI e Qlik Sense",
+"Open the Power BI report ↗": "Abrir o relatório Power BI ↗",
+"Python notebook": "Notebook Python (em inglês)",
+"Code on GitHub": "Código no GitHub",
+"This sentence is computed from the data and rewrites itself when you change the entity or the period. Click any line of the P&L to see it by entity.": "Esta frase é calculada a partir dos dados e reescreve-se quando muda a entidade ou o período. Clique numa linha do P&L para a ver por entidade.",
+"Key findings": "Principais conclusões",
+"Finding 1": "Conclusão 1",
+"Finding 2": "Conclusão 2",
+"Finding 3": "Conclusão 3",
+"Finding 4": "Conclusão 4",
+"The group beats budget only because Portugal raised prices.": "O grupo só supera o orçamento porque Portugal subiu os preços.",
+"Year-to-date EBITDA is €4.41M against a budget of €4.17M (+5.7%). Portugal's 4% list-price rise adds €0.87M. Without it the group would be €0.63M, or 15%, below budget.": "O EBITDA acumulado do ano é de 4,41 M€, contra 4,17 M€ orçamentados (+5,7%). A subida de 4% na tabela de preços em Portugal acrescenta 0,87 M€. Sem ela, o grupo estaria 0,63 M€ (15%) abaixo do orçamento.",
+"Spain's hiring savings hide a larger miss.": "A poupança em contratações em Espanha esconde uma falha maior.",
+"Late sales hires keep salaries €0.14M under budget. The same gap cost Hydraulics volume and service revenue, and Spain's EBITDA is 12.6% short.": "As contratações comerciais atrasadas deixam os salários 0,14 M€ abaixo do orçamento. A mesma falta de pessoal custou volume em Hidráulica e receita de serviços, e o EBITDA de Espanha fica 12,6% aquém.",
+"The UK sells more in pounds and less in euros.": "O Reino Unido vende mais em libras e menos em euros.",
+"UK product sales are 1.6% above budget at the budget rate but 2.0% below in euros. Sterling averaged about 1.15 against a budget of 1.19, which cost €0.36M of sales.": "As vendas de produtos no Reino Unido estão 1,6% acima do orçamento ao câmbio orçamentado, mas 2,0% abaixo em euros. A libra valeu em média cerca de 1,15 €, contra 1,19 € no orçamento, o que custou 0,36 M€ de vendas.",
+"Two cost leaks are worth chasing.": "Há duas fugas de custos que vale a pena atacar.",
+"A steel surcharge on bearings from May costs €0.32M of margin. Portugal's new outbound carrier, since March, costs another €0.17M. The checks also catch a CloudSuite invoice posted twice in the UK in June.": "Uma sobretaxa do aço nos rolamentos, desde maio, custa 0,32 M€ de margem. A nova transportadora de expedição em Portugal, desde março, custa mais 0,17 M€. Os controlos apanham ainda uma fatura da CloudSuite lançada duas vezes no Reino Unido em junho.",
+"Filters": "Filtros",
+"Sections": "Secções",
+"Findings": "Conclusões",
+"Bridge": "Ponte",
+"Price, volume, mix": "Preço, volume, mix",
+"Costs": "Custos",
+"Ledger checks": "Controlos contabilísticos",
+"How it is built": "Como foi feito",
+"Entity": "Entidade",
+"Period": "Período",
+"Jan–Sep 2026": "jan–set 2026",
+"Sep 2026": "set 2026",
+"Full year (9+3)": "Ano completo (9+3)",
+"Headline figures": "Números principais",
+"EBITDA against budget by entity": "EBITDA face ao orçamento por entidade",
+"Management P&L": "P&L de gestão",
+"Show accounts": "Mostrar contas",
+"Hide accounts": "Ocultar contas",
+"Revenue is positive and costs negative, so a positive variance is always favourable. Shaded cells move EBITDA by more than 2% of budget. Click a line to see it by entity.": "As receitas são positivas e os custos negativos, por isso um desvio positivo é sempre favorável. As células sombreadas mexem no EBITDA mais de 2% do orçamento. Clique numa linha para a ver por entidade.",
+"EBITDA bridge, budget to actual": "Ponte do EBITDA, do orçamento ao real",
+"Jan–Sep 2026. Trading effects at budget exchange rates, then FX translation.": "jan–set 2026. Efeitos operacionais a câmbios orçamentados e, por fim, a conversão cambial.",
+"Budget and actual": "Orçamento e real",
+"Favourable": "Favorável",
+"Adverse": "Desfavorável",
+"EBITDA by month": "EBITDA por mês",
+"Actual for closed months, the October reforecast for the rest of 2026.": "Real nos meses fechados; previsão revista de outubro para o resto de 2026.",
+"Actual": "Real",
+"Reforecast": "Previsão revista",
+"Budget": "Orçamento",
+"Product margin: volume, mix, price, cost and FX": "Margem dos produtos: volume, mix, preço, custo e câmbio",
+"Jan–Sep 2026, sales minus cost of materials, budget to actual, in thousands of euros.": "jan–set 2026, vendas menos custo das mercadorias, do orçamento ao real, em milhares de euros.",
+"Volume is actual units at budget prices, so fasteners and pumps add up in one unit. Mix is the margin lost or gained because the sales moved between lines with different margins.": "O volume são as unidades reais a preços orçamentados, para que fixações e bombas se somem na mesma unidade. O mix é a margem perdida ou ganha porque as vendas se deslocaram entre linhas com margens diferentes.",
+"Operating costs by cost centre": "Custos operacionais por centro de custo",
+"Jan–Sep 2026, actual minus budget. Right is favourable.": "jan–set 2026, real menos orçamento. Para a direita é favorável.",
+"Sterling against the budget rate": "Libra face ao câmbio orçamentado",
+"Monthly average euros per pound.": "Média mensal de euros por libra.",
+"Actual rate": "Câmbio real",
+"Budget rate": "Câmbio orçamentado",
+"Ledger exceptions to clear before close": "Exceções contabilísticas a resolver antes do fecho",
+"Duplicate supplier invoices, and costs that moved more than 25% against both the last three months and the same month last year.": "Faturas de fornecedor duplicadas e custos que variaram mais de 25% face aos três meses anteriores e ao mesmo mês do ano passado.",
+"Method": "Método",
+"The data are synthetic: a Python generator writes 81,000 journal lines, budgets, a reforecast, a sales sub-ledger and FX rates for a fictional company. Eight business stories are planted on purpose and listed in the README, so the findings can be checked.": "Os dados são sintéticos: um gerador em Python escreve 81 000 linhas de diário, orçamentos, uma previsão revista, um auxiliar de vendas e câmbios para uma empresa fictícia. Oito histórias de negócio foram plantadas de propósito e estão listadas no README, para que as conclusões possam ser verificadas.",
+"dbt models on DuckDB turn the ledger into a star schema (entity, account hierarchy, cost centre, product line, month) and marts for the P&L, the bridge and the exceptions.": "Modelos dbt sobre DuckDB transformam a contabilidade num modelo em estrela (entidade, hierarquia de contas, centro de custo, linha de produto, mês) e em marts para o P&L, a ponte e as exceções.",
+"Tests check that every journal balances, that the sales sub-ledger agrees with the ledger to the cent, and that both bridges add up exactly to the variance they explain.": "Os testes verificam que cada lançamento está equilibrado, que o auxiliar de vendas bate com a contabilidade ao cêntimo e que as duas pontes somam exatamente o desvio que explicam.",
+"The same marts feed a Power BI model (about 90 DAX measures, a calculation group for month, quarter and year to date, a report-page tooltip, row-level security by entity) and a Qlik Sense app (set analysis, section access).": "Os mesmos marts alimentam um modelo Power BI (cerca de 90 medidas DAX, um calculation group para mês, trimestre e acumulado do ano, uma dica com página de relatório e segurança ao nível da linha por entidade) e uma aplicação Qlik Sense (set analysis, section access).",
+"Code:": "Código:",
+"P&L line by entity": "Linha do P&L por entidade",
+"The Power BI version shows the same thing as a report-page tooltip: hover any line of the P&L matrix.": "No Power BI, o mesmo aparece como dica com página de relatório: passe o rato sobre qualquer linha da matriz do P&L.",
+"Close": "Fechar",
+"Net revenue": "Vendas líquidas",
+"Cost of sales": "Custo das vendas",
+"People": "Pessoal",
+"Facilities": "Instalações",
+"IT": "TI",
+"Commercial": "Comercial",
+"General and admin": "Gerais e administrativos",
+"D&A": "Depreciações e amortizações",
+"Gross margin": "Margem bruta",
+"Gross margin %": "Margem bruta %",
+"Product sales": "Vendas de produtos",
+"Service revenue": "Prestação de serviços",
+"Discounts and rebates": "Descontos e rappel",
+"Cost of materials": "Custo das mercadorias",
+"Inbound freight": "Fretes de compra",
+"Outbound freight": "Fretes de expedição",
+"Salaries": "Salários",
+"Social security": "Segurança Social",
+"Bonuses": "Prémios",
+"Rent and facilities": "Rendas e instalações",
+"Software and IT services": "Software e serviços de TI",
+"Travel": "Deslocações",
+"Professional fees": "Honorários",
+"Other operating costs": "Outros custos operacionais",
+"Depreciation and amortisation": "Depreciações e amortizações",
+"Sales": "Vendas",
+"Operations and warehouse": "Operações e armazém",
+"Finance": "Finanças",
+"People and HR": "Pessoas e RH",
+"Management": "Direção",
+"Bearings": "Rolamentos",
+"Fasteners": "Fixações",
+"Hydraulics": "Hidráulica",
+"Pneumatics": "Pneumática",
+"Tools": "Ferramentas",
+"Spain": "Espanha",
+"France": "França",
+"United Kingdom": "Reino Unido",
+"Group": "Grupo",
+"Budget EBITDA": "EBITDA orçamentado",
+"Sales volume": "Volume de vendas",
+"Sales mix": "Mix de vendas",
+"Sales price": "Preço de venda",
+"Services and discounts": "Serviços e descontos",
+"Unit cost": "Custo unitário",
+"Freight": "Fretes",
+"Other opex": "Outros custos operacionais",
+"FX translation": "Conversão cambial",
+"Actual EBITDA": "EBITDA real",
+"Forecast 9+3": "Previsão 9+3",
+"Variance": "Desvio",
+"Var %": "Desvio %",
+"Prior year": "Ano anterior",
+"vs PY": "vs AA",
+"FY 2025": "Ano 2025",
+"Product line": "Linha de produto",
+"Budget margin": "Margem orçamentada",
+"Volume": "Volume",
+"Mix": "Mix",
+"Price": "Preço",
+"FX": "Câmbio",
+"Actual margin": "Margem real",
+"Margin %": "Margem %",
+"Budget %": "Orçamento %",
+"Total": "Total",
+"Month": "Mês",
+"Account": "Conta",
+"Check": "Controlo",
+"What moved": "O que mudou",
+"Amount (local)": "Valor (moeda local)",
+"Duplicate invoice": "Fatura duplicada",
+"Spike": "Pico",
+"No exceptions for this entity.": "Sem exceções para esta entidade.",
+"EBITDA bridge from budget to actual": "Ponte do EBITDA do orçamento ao real",
+"Monthly EBITDA, actual, reforecast and budget": "EBITDA mensal: real, previsão revista e orçamento",
+"Operating cost variance by cost centre": "Desvio dos custos operacionais por centro de custo",
+"Euros per pound, actual and budget rate": "Euros por libra, câmbio real e orçamentado",
+"EBITDA variance by entity": "Desvio do EBITDA por entidade",
+"adverse": "desfavorável",
+"favourable": "favorável",
+"Click a month from January to September 2026 to use it as the period": "Clique num mês de janeiro a setembro de 2026 para o usar como período",
+"Click an entity, a month (Jan–Sep 2026), a cost centre or a ledger exception to filter the page.": "Clique numa entidade, num mês (jan–set 2026), num centro de custo ou numa exceção contabilística para filtrar a página.",
+"Selected:": "Seleção:",
+"Clear all": "Limpar tudo",
+"The bridge, product margin and cost centres stay Jan–Sep: the export has no monthly detail for them.": "A ponte, a margem dos produtos e os centros de custo mantêm jan–set: a exportação não tem detalhe mensal para eles.",
+"The entity chart shows that cost centre's operating costs.": "O gráfico das entidades mostra os custos operacionais desse centro de custo.",
+"The data files did not load. Reload the page to try again.": "Os ficheiros de dados não carregaram. Recarregue a página para tentar de novo."
+});
+</script>
 <script>
 (function () {
   var NS = 'http://www.w3.org/2000/svg';
   var D = {};
   var DEF = { ent: 'ALL', per: 'YTD' };
+  var T = I18N.t, N = I18N.n;
+  var MONTHS_PT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'], MONTHS_PT_LONG = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  function loc(v) { return v.toLocaleString(I18N.locale()); }
+  function money(cur, s) { return I18N.pt() ? s + '\u00a0' + cur : cur + s; }
   var state = { ent: DEF.ent, per: DEF.per, accounts: false, cc: null };
   // A click target over a mark: pointer and keyboard (Enter / Space) both run fn
   function clickable(hit, fn, label) {
@@ -281,16 +537,17 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
   function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
   function niceStep(span) { var raw = span / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
   var minus = '−';
-  function eurM(v) { return (v < 0 ? minus : '') + '€' + Math.abs(v / 1e6).toFixed(2) + 'M'; }
-  function eurK(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : r > 0 ? '+' : '') + Math.abs(r).toLocaleString('en-US'); }
-  function k(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : '') + Math.abs(r).toLocaleString('en-US'); }
-  function pct(v, d) { if (v == null || !isFinite(v)) return '–'; return (v > 0 ? '+' : v < 0 ? minus : '') + Math.abs(v * 100).toFixed(d == null ? 1 : d) + '%'; }
-  function share(v) { return v == null || !isFinite(v) ? '–' : (v * 100).toFixed(1) + '%'; }
+  function eurM(v) { var n = Math.abs(v / 1e6).toFixed(2); return (v < 0 ? minus : '') + (I18N.pt() ? N(n) + '\u00a0M€' : '€' + n + 'M'); }
+  function eurK(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : r > 0 ? '+' : '') + loc(Math.abs(r)); }
+  function k(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : '') + loc(Math.abs(r)); }
+  function pct(v, d) { if (v == null || !isFinite(v)) return '–'; return (v > 0 ? '+' : v < 0 ? minus : '') + N(Math.abs(v * 100).toFixed(d == null ? 1 : d)) + '%'; }
+  function share(v) { return v == null || !isFinite(v) ? '–' : N((v * 100).toFixed(1)) + '%'; }
   function cls(v) { return v > 0 ? 'fav' : v < 0 ? 'adv' : ''; }
   function inEnt(e) { return state.ent === 'ALL' || e === state.ent; }
   function entName(id) { var e = D.meta.entities.find(function (x) { return x[0] === id; }); return e ? e[1] : id; }
+  function pts(s) { return s.replace('%', I18N.p(' pts', ' p.p.')); }
   function acct(id) { return D.acct[id]; }
-  function monthLabel(ym) { return new Date(ym + '-01T00:00:00').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); }
+  function monthLabel(ym) { if (I18N.pt()) return MONTHS_PT[Number(ym.slice(5, 7)) - 1] + ' ' + ym.slice(0, 4); return new Date(ym + '-01T00:00:00').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); }
 
   // ---------- P&L aggregation ----------
   var GROUPS = ['Net revenue', 'Cost of sales', 'People', 'Facilities', 'IT', 'Commercial', 'General and admin', 'D&A'];
@@ -320,16 +577,18 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     var ebit = sumWhere(acc, function () { return true; });
     return { rev: rev, gm: gm, ebitda: ebitda, ebit: ebit };
   }
-  function periodName() { return state.per === 'YTD' ? 'Jan–Sep 2026' : state.per === 'SEP' ? 'September 2026' : state.per.charAt(0) === 'M' ? new Date(state.per.slice(2) + '-01T00:00:00').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'Full year 2026'; }
-  function aName() { return state.per === 'FY' ? 'Forecast 9+3' : 'Actual'; }
+  function periodName() {
+    if (I18N.pt()) return state.per === 'YTD' ? 'jan–set 2026' : state.per === 'SEP' ? 'setembro de 2026' : state.per.charAt(0) === 'M' ? MONTHS_PT_LONG[Number(state.per.slice(7, 9)) - 1] + ' de ' + state.per.slice(2, 6) : 'ano completo de 2026';
+    return state.per === 'YTD' ? 'Jan–Sep 2026' : state.per === 'SEP' ? 'September 2026' : state.per.charAt(0) === 'M' ? new Date(state.per.slice(2) + '-01T00:00:00').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'Full year 2026'; }
+  function aName() { return T(state.per === 'FY' ? 'Forecast 9+3' : 'Actual'); }
 
   function renderKpis() {
     var t = totals(byAccount());
     var tiles = [
-      ['Net revenue · ' + aName().toLowerCase(), eurM(t.rev.a), pct(t.rev.a / t.rev.b - 1), 'vs budget ' + eurM(t.rev.b), t.rev.a - t.rev.b],
-      ['Gross margin', share(t.gm.a / t.rev.a), pct(t.gm.a / t.rev.a - t.gm.b / t.rev.b, 1).replace('%', ' pts'), 'budget ' + share(t.gm.b / t.rev.b), t.gm.a / t.rev.a - t.gm.b / t.rev.b],
-      ['EBITDA · ' + aName().toLowerCase(), eurM(t.ebitda.a), pct(t.ebitda.a / t.ebitda.b - 1), 'vs budget ' + eurM(t.ebitda.b), t.ebitda.a - t.ebitda.b],
-      ['EBITDA vs prior year', pct(t.ebitda.a / t.ebitda.p - 1), '', (state.per === 'FY' ? 'FY 2025 ' : 'same months 2025 ') + eurM(t.ebitda.p), t.ebitda.a - t.ebitda.p]
+      [T('Net revenue') + ' · ' + aName().toLowerCase(), eurM(t.rev.a), pct(t.rev.a / t.rev.b - 1), I18N.p('vs budget ', 'face ao orçamento de ') + eurM(t.rev.b), t.rev.a - t.rev.b],
+      [T('Gross margin'), share(t.gm.a / t.rev.a), pts(pct(t.gm.a / t.rev.a - t.gm.b / t.rev.b, 1)), I18N.p('budget ', 'face a ') + share(t.gm.b / t.rev.b) + I18N.p('', ' no orçamento'), t.gm.a / t.rev.a - t.gm.b / t.rev.b],
+      ['EBITDA · ' + aName().toLowerCase(), eurM(t.ebitda.a), pct(t.ebitda.a / t.ebitda.b - 1), I18N.p('vs budget ', 'face ao orçamento de ') + eurM(t.ebitda.b), t.ebitda.a - t.ebitda.b],
+      [I18N.p('EBITDA vs prior year', 'EBITDA face ao ano anterior'), pct(t.ebitda.a / t.ebitda.p - 1), '', (state.per === 'FY' ? I18N.p('FY 2025 ', 'ano 2025: ') : I18N.p('same months 2025 ', 'mesmos meses de 2025: ')) + eurM(t.ebitda.p), t.ebitda.a - t.ebitda.p]
     ];
     document.getElementById('kpis').innerHTML = tiles.map(function (x) {
       return '<div class="kpi"><span class="label">' + x[0] + ' · ' + periodName() + '</span><span class="v">' + x[1] + '</span><span class="d">' +
@@ -339,14 +598,14 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
 
   function renderPnl() {
     var acc = byAccount(), t = totals(acc), thr = Math.abs(t.ebitda.b) * 0.02;
-    document.getElementById('pnl-sub').textContent = (state.ent === 'ALL' ? 'Group, all four entities' : entName(state.ent)) + ' · ' + periodName() + ' · thousands of euros';
-    var head = '<thead><tr><th></th><th>' + aName() + '</th><th>Budget</th><th>Variance</th><th>Var %</th><th>' + (state.per === 'FY' ? 'FY 2025' : 'Prior year') + '</th><th>vs PY</th></tr></thead>';
+    document.getElementById('pnl-sub').textContent = (state.ent === 'ALL' ? I18N.p('Group, all four entities', 'Grupo, as quatro entidades') : entName(state.ent)) + ' · ' + periodName() + ' · ' + I18N.p('thousands of euros', 'milhares de euros');
+    var head = '<thead><tr><th></th><th>' + aName() + '</th><th>' + T('Budget') + '</th><th>' + T('Variance') + '</th><th>' + T('Var %') + '</th><th>' + T(state.per === 'FY' ? 'FY 2025' : 'Prior year') + '</th><th>' + T('vs PY') + '</th></tr></thead>';
     function row(name, s, klass) {
       var v = s.a - s.b, shade = klass !== 'acct' && Math.abs(v) > thr ? (v > 0 ? ' pos' : ' neg') : '';
-      return '<tr class="' + (klass || '') + '"' + (klass === 'acct' ? '' : ' data-line="' + name + '" tabindex="0"') + '><td>' + name + '</td><td>' + k(s.a) + '</td><td>' + k(s.b) + '</td><td class="' + shade + '"><span class="' + cls(v) + '">' + eurK(v) + '</span></td><td>' + pct(s.b ? v / Math.abs(s.b) : null) + '</td><td>' + k(s.p) + '</td><td>' + pct(s.p ? (s.a - s.p) / Math.abs(s.p) : null) + '</td></tr>';
+      return '<tr class="' + (klass || '') + '"' + (klass === 'acct' ? '' : ' data-line="' + name + '" tabindex="0"') + '><td>' + T(name) + '</td><td>' + k(s.a) + '</td><td>' + k(s.b) + '</td><td class="' + shade + '"><span class="' + cls(v) + '">' + eurK(v) + '</span></td><td>' + pct(s.b ? v / Math.abs(s.b) : null) + '</td><td>' + k(s.p) + '</td><td>' + pct(s.p ? (s.a - s.p) / Math.abs(s.p) : null) + '</td></tr>';
     }
     function ratio(name, num, den) {
-      return '<tr class="ratio"><td>' + name + '</td><td>' + share(num.a / den.a) + '</td><td>' + share(num.b / den.b) + '</td><td>' + pct(num.a / den.a - num.b / den.b).replace('%', ' pts') + '</td><td></td><td>' + share(num.p / den.p) + '</td><td></td></tr>';
+      return '<tr class="ratio"><td>' + T(name) + '</td><td>' + share(num.a / den.a) + '</td><td>' + share(num.b / den.b) + '</td><td>' + pts(pct(num.a / den.a - num.b / den.b)) + '</td><td></td><td>' + share(num.p / den.p) + '</td><td></td></tr>';
     }
     var body = '';
     GROUPS.forEach(function (g) {
@@ -358,7 +617,7 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     body += row('EBIT', t.ebit, 'sub');
     document.getElementById('pnl').innerHTML = head + '<tbody>' + body + '</tbody>';
   }
-  function eurKs(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : '+') + '€' + Math.abs(r).toLocaleString('en-US') + 'k'; }
+  function eurKs(v) { var r = Math.round(v / 1e3); return (r < 0 ? minus : '+') + (I18N.pt() ? loc(Math.abs(r)) + '\u00a0k€' : '€' + Math.abs(r).toLocaleString('en-US') + 'k'); }
   function lineTest(name) {
     if (name === 'Gross margin') return function (x) { return x[3] === 'Gross margin'; };
     if (name === 'EBITDA') return function (x) { return x[3] === 'Gross margin' || x[3] === 'EBITDA'; };
@@ -378,22 +637,26 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     });
     return D.meta.entities.map(function (e) { var o = out[e[0]] || { a: 0, b: 0 }; return { id: e[0], name: e[1], a: o.a, b: o.b, v: o.a - o.b }; });
   }
+  var lastLine = null;
   function openLine(name) {
     var ents = lineByEntity(name), tot = ents.reduce(function (s, e) { return { a: s.a + e.a, b: s.b + e.b, v: s.v + e.v }; }, { a: 0, b: 0, v: 0 });
     var worst = ents.slice().sort(function (x, y) { return x.v - y.v; })[0], best = ents.slice().sort(function (x, y) { return y.v - x.v; })[0];
     var max = Math.max.apply(null, ents.map(function (e) { return Math.abs(e.v); })) || 1;
-    document.getElementById('line-kicker').textContent = 'P&L line by entity · ' + periodName();
-    document.getElementById('line-name').textContent = name;
-    document.getElementById('line-why').textContent = name + ' is ' + eurKs(tot.v) + ' against budget for the group (' + pct(tot.b ? tot.v / Math.abs(tot.b) : null) + '). ' +
+    lastLine = name;
+    document.getElementById('line-kicker').textContent = T('P&L line by entity') + ' · ' + periodName();
+    document.getElementById('line-name').textContent = T(name);
+    document.getElementById('line-why').textContent = I18N.pt() ? T(name) + ': ' + eurKs(tot.v) + ' face ao orçamento no grupo (' + pct(tot.b ? tot.v / Math.abs(tot.b) : null) + '). ' +
+      (worst.v < 0 ? 'Mais atrasada: ' + worst.name + ', ' + eurKs(worst.v) + '.' : 'Todas as entidades estão no orçamento ou acima; a melhor: ' + best.name + ', ' + eurKs(best.v) + '.') : name + ' is ' + eurKs(tot.v) + ' against budget for the group (' + pct(tot.b ? tot.v / Math.abs(tot.b) : null) + '). ' +
       (worst.v < 0 ? 'Furthest behind: ' + worst.name + ', ' + eurKs(worst.v) + '.' : 'Every entity is on or ahead of budget; best: ' + best.name + ', ' + eurKs(best.v) + '.');
-    var head = '<thead><tr><th>Entity</th><th>' + aName() + '</th><th>Budget</th><th>Variance</th><th>Var %</th><th></th></tr></thead>';
+    var head = '<thead><tr><th>' + T('Entity') + '</th><th>' + aName() + '</th><th>' + T('Budget') + '</th><th>' + T('Variance') + '</th><th>' + T('Var %') + '</th><th></th></tr></thead>';
     var body = ents.map(function (e) {
       var w = Math.round(Math.abs(e.v) / max * 90);
       return '<tr><td>' + e.name + '</td><td>' + k(e.a) + '</td><td>' + k(e.b) + '</td><td><span class="' + cls(e.v) + '">' + eurK(e.v) + '</span></td><td>' + pct(e.b ? e.v / Math.abs(e.b) : null) +
         '</td><td style="text-align:left"><span class="bar" style="width:' + w + 'px;background:var(' + (e.v < 0 ? '--warn' : '--good') + ')"></span></td></tr>';
     }).join('');
-    document.getElementById('line-tbl').innerHTML = head + '<tbody>' + body + '<tr class="sub"><td>Group</td><td>' + k(tot.a) + '</td><td>' + k(tot.b) + '</td><td><span class="' + cls(tot.v) + '">' + eurK(tot.v) + '</span></td><td>' + pct(tot.b ? tot.v / Math.abs(tot.b) : null) + '</td><td></td></tr></tbody>';
+    document.getElementById('line-tbl').innerHTML = head + '<tbody>' + body + '<tr class="sub"><td>' + T('Group') + '</td><td>' + k(tot.a) + '</td><td>' + k(tot.b) + '</td><td><span class="' + cls(tot.v) + '">' + eurK(tot.v) + '</span></td><td>' + pct(tot.b ? tot.v / Math.abs(tot.b) : null) + '</td><td></td></tr></tbody>';
     var dlg = document.getElementById('line');
+    if (dlg.open) return;
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
   }
   function pnlPick(e) {
@@ -409,14 +672,14 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
   // Live headline: one sentence that answers the page for the current entity and period
   function renderHeadline() {
     var t = totals(byAccount()), ev = t.ebitda.a - t.ebitda.b, nr = t.rev.b ? t.rev.a / t.rev.b - 1 : null, out;
-    var lead = (state.per === 'FY' ? 'Full year 2026 (9+3 forecast): ' : periodName() + ': ') + 'net revenue ' + pct(nr) + ' and EBITDA ' + eurKs(ev) + ' (' + pct(t.ebitda.b ? ev / Math.abs(t.ebitda.b) : null) + ') against budget';
+    var lead = I18N.pt() ? (state.per === 'FY' ? 'No ano completo de 2026 (previsão 9+3), ' : 'Em ' + periodName() + ', ') + 'as vendas líquidas variam ' + pct(nr) + ' e o EBITDA ' + eurKs(ev) + ' (' + pct(t.ebitda.b ? ev / Math.abs(t.ebitda.b) : null) + ') face ao orçamento' : (state.per === 'FY' ? 'Full year 2026 (9+3 forecast): ' : periodName() + ': ') + 'net revenue ' + pct(nr) + ' and EBITDA ' + eurKs(ev) + ' (' + pct(t.ebitda.b ? ev / Math.abs(t.ebitda.b) : null) + ') against budget';
     if (state.ent === 'ALL') {
       var worst = lineByEntity('EBITDA').sort(function (x, y) { return x.v - y.v; })[0];
-      out = lead + '. Furthest behind: ' + worst.name + ' at ' + eurKs(worst.v) + ' EBITDA.';
+      out = lead + I18N.p('. Furthest behind: ' + worst.name + ' at ' + eurKs(worst.v) + ' EBITDA.', '. Mais atrasada: ' + worst.name + ', com ' + eurKs(worst.v) + ' de EBITDA.');
     } else {
       var acc = byAccount(), lines = GROUPS.map(function (g) { var s = sumWhere(acc, function (x) { return x[2] === g; }); return { g: g, v: s.a - s.b }; })
         .sort(function (x, y) { return x.v - y.v; });
-      out = entName(state.ent) + ', ' + lead + '. Weakest line: ' + lines[0].g + ', ' + eurKs(lines[0].v) + '.';
+      out = entName(state.ent) + ', ' + (I18N.pt() ? lead.charAt(0).toLowerCase() + lead.slice(1) : lead) + I18N.p('. Weakest line: ', '. Linha mais fraca: ') + T(lines[0].g) + ', ' + eurKs(lines[0].v) + '.';
     }
     document.getElementById('headline').textContent = out;
   }
@@ -427,7 +690,7 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     var steps = [];
     D.bridge.forEach(function (r) { if (!inEnt(r[0])) return; var s = steps[r[1] - 1] = steps[r[1] - 1] || { name: r[2], v: 0 }; s.v += r[3]; });
     var W = 520, rowH = 26, m = { t: 6, r: 64, b: 22, l: 150 }, H = m.t + m.b + steps.length * rowH;
-    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'EBITDA bridge from budget to actual' }, host);
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': T('EBITDA bridge from budget to actual') }, host);
     var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
     var run = 0, bars = [];
     steps.forEach(function (s, i) {
@@ -439,16 +702,16 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     var hi = Math.max.apply(null, bars.map(function (b) { return Math.max(b.x0, b.x1); })) * 1.02;
     var X = function (v) { return m.l + (v - lo) / (hi - lo) * (W - m.l - m.r); };
     var step = niceStep(hi - lo);
-    for (var g = Math.ceil(lo / step) * step; g <= hi; g += step) { el('line', { x1: X(g), x2: X(g), y1: m.t, y2: H - m.b, stroke: css('--grid') }, svg); txt(svg, X(g), H - 6, eurM(g).replace('.00M', 'M'), { 'text-anchor': 'middle' }); }
+    for (var g = Math.ceil(lo / step) * step; g <= hi; g += step) { el('line', { x1: X(g), x2: X(g), y1: m.t, y2: H - m.b, stroke: css('--grid') }, svg); txt(svg, X(g), H - 6, eurM(g).replace('.00M', 'M').replace(',00\u00a0M', '\u00a0M'), { 'text-anchor': 'middle' }); }
     bars.forEach(function (b, i) {
       var y = m.t + i * rowH, x = Math.min(X(b.x0), X(b.x1)), w = Math.max(1.5, Math.abs(X(b.x1) - X(b.x0)));
       var color = b.total ? css('--total') : b.s.v >= 0 ? css('--good') : css('--warn');
-      txt(svg, m.l - 8, y + rowH / 2 + 4, b.s.name, { 'text-anchor': 'end', class: b.total ? 'lbl' : '' });
+      txt(svg, m.l - 8, y + rowH / 2 + 4, T(b.s.name), { 'text-anchor': 'end', class: b.total ? 'lbl' : '' });
       el('rect', { x: x, y: y + 5, width: w, height: rowH - 10, rx: 2, fill: color }, svg);
       if (i > 0 && i < bars.length) { var prevEnd = bars[i - 1].total ? bars[i - 1].x1 : bars[i - 1].x1; el('line', { x1: X(prevEnd), x2: X(prevEnd), y1: y - 5, y2: y + 5, stroke: css('--muted'), 'stroke-dasharray': '2 2' }, svg); }
-      txt(svg, Math.max(X(b.x0), X(b.x1)) + 6, y + rowH / 2 + 4, b.total ? eurM(b.s.v) : eurK(b.s.v) + 'k', { class: 'lbl' });
+      txt(svg, Math.max(X(b.x0), X(b.x1)) + 6, y + rowH / 2 + 4, b.total ? eurM(b.s.v) : eurK(b.s.v) + I18N.p('k', '\u00a0k€'), { class: 'lbl' });
       var hit = el('rect', { x: m.l, y: y, width: W - m.l - m.r, height: rowH, fill: 'transparent' }, svg);
-      hit.addEventListener('pointerenter', function () { var bb = svg.getBoundingClientRect(); tip.innerHTML = b.s.name + '<br>' + (b.total ? eurM(b.s.v) : eurK(b.s.v) + ' thousand euros'); tip.style.left = ((x + w / 2) / W * bb.width) + 'px'; tip.style.top = ((y + 5) / H * bb.height) + 'px'; tip.hidden = false; });
+      hit.addEventListener('pointerenter', function () { var bb = svg.getBoundingClientRect(); tip.innerHTML = T(b.s.name) + '<br>' + (b.total ? eurM(b.s.v) : eurK(b.s.v) + I18N.p(' thousand euros', ' mil euros')); tip.style.left = ((x + w / 2) / W * bb.width) + 'px'; tip.style.top = ((y + 5) / H * bb.height) + 'px'; tip.hidden = false; });
       hit.addEventListener('pointerleave', function () { tip.hidden = true; });
     });
   }
@@ -476,9 +739,9 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     var lo0 = Math.min(0, Math.min.apply(null, all)), hiV = Math.max.apply(null, all), st = niceStep(hiV - lo0), top = Math.ceil(hiV / st) * st, lo = Math.floor(lo0 / st) * st;
     var X = function (i) { return m.l + i / (months.length - 1) * (W - m.l - m.r); };
     var Y = function (v) { return H - m.b - (v - lo) / (top - lo) * (H - m.t - m.b); };
-    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Monthly EBITDA, actual, reforecast and budget' }, host);
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': T('Monthly EBITDA, actual, reforecast and budget') }, host);
     var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
-    for (var g = Math.floor(lo / st) * st; g <= top + 1; g += st) { el('line', { x1: m.l, x2: W - m.r, y1: Y(g), y2: Y(g), stroke: css('--grid') }, svg); txt(svg, m.l - 6, Y(g) + 4, (Math.abs(g) < 1 ? '€0' : eurM(g).replace(/0M$/, 'M')), { 'text-anchor': 'end' }); }
+    for (var g = Math.floor(lo / st) * st; g <= top + 1; g += st) { el('line', { x1: m.l, x2: W - m.r, y1: Y(g), y2: Y(g), stroke: css('--grid') }, svg); txt(svg, m.l - 6, Y(g) + 4, (Math.abs(g) < 1 ? I18N.p('€0', '0 €') : eurM(g).replace(/0M$/, 'M').replace(/0\u00a0M€$/, '\u00a0M€')), { 'text-anchor': 'end' }); }
     months.forEach(function (mo, i) { if (mo.slice(5) === '01' || mo.slice(5) === '07') txt(svg, X(i), H - 8, monthLabel(mo), { 'text-anchor': 'middle' }); });
     series.slice().reverse().forEach(function (s) {
       var d = '', pen = false;
@@ -495,7 +758,7 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
       cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('visibility', 'visible');
       var top = Infinity;
       dots.forEach(function (d, j) { var v = series[j].values[i]; if (v == null || (j === 1 && months[i] <= '2026-09')) { d.setAttribute('visibility', 'hidden'); return; } top = Math.min(top, Y(v)); d.setAttribute('cx', X(i)); d.setAttribute('cy', Y(v)); d.setAttribute('visibility', 'visible'); });
-      var lines = series.filter(function (s, j) { return s.values[i] != null && !(j === 1 && months[i] <= '2026-09'); }).map(function (s) { return '<br>' + s.name + ': ' + eurM(s.values[i]); });
+      var lines = series.filter(function (s, j) { return s.values[i] != null && !(j === 1 && months[i] <= '2026-09'); }).map(function (s) { return '<br>' + T(s.name) + ': ' + eurM(s.values[i]); });
       tip.innerHTML = monthLabel(months[i]) + lines.join('');
       tip.style.left = (X(i) / W * b.width) + 'px'; tip.style.top = (top / H * b.height) + 'px'; tip.hidden = false;
     });
@@ -508,7 +771,7 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
       if (isNaN(i)) return; var mo = months[i];
       if (mo < '2026-01' || mo > '2026-09') return;
       pickMonth(mo);
-    }, 'Click a month from January to September 2026 to use it as the period');
+    }, T('Click a month from January to September 2026 to use it as the period'));
     hit.addEventListener('pointermove', function (evt) { var b = svg.getBoundingClientRect(), px = (evt.clientX - b.left) / b.width * W; hit.dataset.i = Math.max(0, Math.min(months.length - 1, Math.round((px - m.l) / (W - m.l - m.r) * (months.length - 1)))); var mo = months[+hit.dataset.i]; hit.style.cursor = mo >= '2026-01' && mo <= '2026-09' ? 'pointer' : 'default'; });
   }
 
@@ -525,9 +788,9 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     var thr = Math.max(20000, Math.abs(tot.bm) * 0.01);
     function cell(v) { return '<td class="' + (Math.abs(v) >= thr ? (v > 0 ? 'pos' : 'neg') : '') + '">' + eurK(v) + '</td>'; }
     function row(name, o, sub) {
-      return '<tr' + (sub ? ' class="sub"' : '') + '><td>' + name + '</td><td>' + k(o.bm) + '</td>' + cell(o.vol) + cell(o.mix) + cell(o.price) + cell(o.cost) + cell(o.fx) + '<td>' + k(o.am) + '</td><td>' + share(o.am / o.as) + '</td><td>' + share(o.bm / o.bs) + '</td></tr>';
+      return '<tr' + (sub ? ' class="sub"' : '') + '><td>' + T(name) + '</td><td>' + k(o.bm) + '</td>' + cell(o.vol) + cell(o.mix) + cell(o.price) + cell(o.cost) + cell(o.fx) + '<td>' + k(o.am) + '</td><td>' + share(o.am / o.as) + '</td><td>' + share(o.bm / o.bs) + '</td></tr>';
     }
-    var head = '<thead><tr><th>Product line</th><th>Budget margin</th><th>Volume</th><th>Mix</th><th>Price</th><th>Unit cost</th><th>FX</th><th>Actual margin</th><th>Margin %</th><th>Budget %</th></tr></thead>';
+    var head = '<thead><tr>' + ['Product line', 'Budget margin', 'Volume', 'Mix', 'Price', 'Unit cost', 'FX', 'Actual margin', 'Margin %', 'Budget %'].map(function (h) { return '<th>' + T(h) + '</th>'; }).join('') + '</tr></thead>';
     var body = order.map(function (p) { var n = D.meta.product_lines.find(function (x) { return x[0] === p; })[1]; return lines[p] ? row(n, lines[p]) : ''; }).join('') + row('Total', tot, true);
     document.getElementById('pvm').innerHTML = head + '<tbody>' + body + '</tbody>';
   }
@@ -540,24 +803,24 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     var grp = {};
     D.opex.forEach(function (r) { if (!inEnt(r[0])) return; var g = grp[r[1]] = grp[r[1]] || {}; g[r[2]] = (g[r[2]] || 0) + r[3] - r[4]; });
     var rows = D.meta.cost_centres.filter(function (c) { return by[c[0]]; }).map(function (c) { return { id: c[0], name: c[1], v: by[c[0]].a - by[c[0]].b, a: by[c[0]].a, b: by[c[0]].b,
-      groups: Object.keys(grp[c[0]] || {}).map(function (g) { return g + ' ' + eurK(grp[c[0]][g]) + 'k'; }).join(' · ') }; })
+      groups: Object.keys(grp[c[0]] || {}).map(function (g) { return T(g) + ' ' + eurK(grp[c[0]][g]) + I18N.p('k', '\u00a0k€'); }).join(' · ') }; })
       .sort(function (x, y) { return x.v - y.v; });
     var W = 520, rowH = 28, m = { t: 6, r: 58, b: 22, l: 168 }, H = m.t + m.b + rows.length * rowH;
     var maxAbs = Math.max.apply(null, rows.map(function (r) { return Math.abs(r.v); })) || 1;
     var mid = m.l + (W - m.l - m.r) / 2, X = function (v) { return mid + v / maxAbs * (W - m.l - m.r) / 2; };
-    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Operating cost variance by cost centre' }, host);
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': T('Operating cost variance by cost centre') }, host);
     var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
     el('line', { x1: mid, x2: mid, y1: m.t, y2: H - m.b, stroke: css('--muted') }, svg);
-    txt(svg, m.l, H - 6, 'adverse', {}); txt(svg, W - m.r, H - 6, 'favourable', { 'text-anchor': 'end' });
+    txt(svg, m.l, H - 6, T('adverse'), {}); txt(svg, W - m.r, H - 6, T('favourable'), { 'text-anchor': 'end' });
     rows.forEach(function (r, i) {
       var y = m.t + i * rowH, x0 = Math.min(X(0), X(r.v)), w = Math.max(1.5, Math.abs(X(r.v) - X(0)));
-      txt(svg, m.l - 8, y + rowH / 2 + 4, r.name, { 'text-anchor': 'end' });
+      txt(svg, m.l - 8, y + rowH / 2 + 4, T(r.name), { 'text-anchor': 'end' });
       el('rect', { x: x0, y: y + 6, width: w, height: rowH - 12, rx: 2, fill: state.cc && state.cc !== r.id ? css('--grid') : r.v >= 0 ? css('--good') : css('--warn') }, svg);
-      txt(svg, r.v >= 0 ? X(r.v) + 6 : X(r.v) - 6, y + rowH / 2 + 4, eurK(r.v) + 'k', { 'text-anchor': r.v >= 0 ? 'start' : 'end', class: 'lbl' });
+      txt(svg, r.v >= 0 ? X(r.v) + 6 : X(r.v) - 6, y + rowH / 2 + 4, eurK(r.v) + I18N.p('k', '\u00a0k€'), { 'text-anchor': r.v >= 0 ? 'start' : 'end', class: 'lbl' });
       var hit = el('rect', { x: m.l, y: y, width: W - m.l - m.r, height: rowH, fill: 'transparent' }, svg);
-      hit.addEventListener('pointerenter', function () { var bb = svg.getBoundingClientRect(); tip.innerHTML = r.name + '<br>Actual ' + eurM(r.a) + ' · budget ' + eurM(r.b) + '<br>Variance ' + eurK(r.v) + 'k' + '<br>' + r.groups + '<br><i>Click to filter the entity chart</i>'; tip.style.left = ((x0 + w / 2) / W * bb.width) + 'px'; tip.style.top = ((y + 6) / H * bb.height) + 'px'; tip.hidden = false; });
+      hit.addEventListener('pointerenter', function () { var bb = svg.getBoundingClientRect(); tip.innerHTML = T(r.name) + '<br>' + T('Actual') + ' ' + eurM(r.a) + ' · ' + I18N.p('budget', 'orçamento') + ' ' + eurM(r.b) + '<br>' + T('Variance') + ' ' + eurK(r.v) + I18N.p('k', '\u00a0k€') + '<br>' + r.groups + '<br><i>' + I18N.p('Click to filter the entity chart', 'Clique para filtrar o gráfico das entidades') + '</i>'; tip.style.left = ((x0 + w / 2) / W * bb.width) + 'px'; tip.style.top = ((y + 6) / H * bb.height) + 'px'; tip.hidden = false; });
       hit.addEventListener('pointerleave', function () { tip.hidden = true; });
-      clickable(hit, function () { tip.hidden = true; state.cc = state.cc === r.id ? null : r.id; render(); }, 'Filter by cost centre ' + r.name);
+      clickable(hit, function () { tip.hidden = true; state.cc = state.cc === r.id ? null : r.id; render(); }, I18N.p('Filter by cost centre ', 'Filtrar pelo centro de custo ') + T(r.name));
     });
   }
 
@@ -568,9 +831,9 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     var vals = []; rows.forEach(function (r) { vals.push(r[1], r[2]); });
     var lo = Math.floor(Math.min.apply(null, vals) * 50) / 50, hi = Math.ceil(Math.max.apply(null, vals) * 50) / 50;
     var X = function (i) { return m.l + i / (rows.length - 1) * (W - m.l - m.r); }, Y = function (v) { return H - m.b - (v - lo) / (hi - lo) * (H - m.t - m.b); };
-    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Euros per pound, actual and budget rate' }, host);
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': T('Euros per pound, actual and budget rate') }, host);
     var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
-    for (var g = lo; g <= hi + 1e-9; g += 0.02) { el('line', { x1: m.l, x2: W - m.r, y1: Y(g), y2: Y(g), stroke: css('--grid') }, svg); txt(svg, m.l - 6, Y(g) + 4, g.toFixed(2), { 'text-anchor': 'end' }); }
+    for (var g = lo; g <= hi + 1e-9; g += 0.02) { el('line', { x1: m.l, x2: W - m.r, y1: Y(g), y2: Y(g), stroke: css('--grid') }, svg); txt(svg, m.l - 6, Y(g) + 4, N(g.toFixed(2)), { 'text-anchor': 'end' }); }
     rows.forEach(function (r, i) { if (r[0].slice(5) === '01') txt(svg, X(i), H - 8, r[0].slice(0, 4), { 'text-anchor': 'middle' }); });
     function path(col) { return rows.map(function (r, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(r[col]).toFixed(1); }).join(''); }
     el('path', { d: path(2), fill: 'none', stroke: css('--muted'), 'stroke-width': 2, 'stroke-dasharray': '5 4' }, svg);
@@ -583,7 +846,7 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
       var i = Math.max(0, Math.min(rows.length - 1, Math.round((px - m.l) / (W - m.l - m.r) * (rows.length - 1))));
       cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('visibility', 'visible');
       dot.setAttribute('cx', X(i)); dot.setAttribute('cy', Y(rows[i][1])); dot.setAttribute('visibility', 'visible');
-      tip.innerHTML = monthLabel(rows[i][0]) + '<br>Actual ' + rows[i][1].toFixed(3) + '<br>Budget ' + rows[i][2].toFixed(2);
+      tip.innerHTML = monthLabel(rows[i][0]) + '<br>' + T('Actual') + ' ' + N(rows[i][1].toFixed(3)) + '<br>' + T('Budget') + ' ' + N(rows[i][2].toFixed(2));
       tip.style.left = (X(i) / W * b.width) + 'px'; tip.style.top = (Y(Math.max(rows[i][1], rows[i][2])) / H * b.height) + 'px'; tip.hidden = false;
     });
     hit.addEventListener('pointerleave', function () { cross.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; });
@@ -592,16 +855,16 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
   // ---------- ledger checks ----------
   function renderChecks() {
     var rows = D.checks.filter(function (r) { return inEnt(r[1]); });
-    var head = '<thead><tr><th>Month</th><th>Entity</th><th>Account</th><th>Check</th><th>What moved</th><th>Amount (local)</th></tr></thead>';
+    var head = '<thead><tr>' + ['Month', 'Entity', 'Account', 'Check', 'What moved', 'Amount (local)'].map(function (h) { return '<th>' + T(h) + '</th>'; }).join('') + '</tr></thead>';
     var body = rows.slice().reverse().map(function (r) {
       var a = acct(r[2]), cur = D.meta.entities.find(function (e) { return e[0] === r[1]; })[3] === 'GBP' ? '£' : '€';
-      var what = r[0] === 'duplicate_invoice' ? r[4] + ' · ' + r[5] + ' posted ' + r[6] + ' times' : pct(r[8], 0) + ' vs same month last year';
-      var amount = r[0] === 'duplicate_invoice' ? cur + Math.round(r[7]).toLocaleString('en-US') + ' extra' : (r[7] < 0 ? minus : '+') + cur + Math.abs(Math.round(r[7])).toLocaleString('en-US') + ' cost';
-      if (r[0] !== 'duplicate_invoice') amount = (r[7] < 0 ? '+' : minus) + cur + Math.abs(Math.round(r[7])).toLocaleString('en-US') + ' cost';
+      var what = r[0] === 'duplicate_invoice' ? r[4] + ' · ' + r[5] + I18N.p(' posted ' + r[6] + ' times', ' lançada ' + r[6] + ' vezes') : pct(r[8], 0) + I18N.p(' vs same month last year', ' face ao mesmo mês do ano anterior');
+      var amount = r[0] === 'duplicate_invoice' ? money(cur, loc(Math.round(r[7]))) + I18N.p(' extra', ' a mais') : '';
+      if (r[0] !== 'duplicate_invoice') amount = (r[7] < 0 ? '+' : minus) + money(cur, loc(Math.abs(Math.round(r[7])))) + I18N.p(' cost', ' de custo');
       var on = state.ent === r[1] && state.per === 'M:' + r[3];
-      return '<tr class="hit-x' + (on ? ' on' : '') + '" tabindex="0" data-ent="' + r[1] + '" data-mo="' + r[3] + '"><td>' + monthLabel(r[3]) + '</td><td>' + r[1] + '</td><td>' + r[2] + ' ' + (a ? a[1] : '') + '</td><td><span class="tag">' + (r[0] === 'duplicate_invoice' ? 'Duplicate invoice' : 'Spike') + '</span></td><td>' + what + '</td><td>' + amount + '</td></tr>';
+      return '<tr class="hit-x' + (on ? ' on' : '') + '" tabindex="0" data-ent="' + r[1] + '" data-mo="' + r[3] + '"><td>' + monthLabel(r[3]) + '</td><td>' + r[1] + '</td><td>' + r[2] + ' ' + (a ? T(a[1]) : '') + '</td><td><span class="tag">' + T(r[0] === 'duplicate_invoice' ? 'Duplicate invoice' : 'Spike') + '</span></td><td>' + what + '</td><td>' + amount + '</td></tr>';
     }).join('');
-    document.getElementById('checks').innerHTML = head + '<tbody>' + (body || '<tr><td colspan="6">No exceptions for this entity.</td></tr>') + '</tbody>';
+    document.getElementById('checks').innerHTML = head + '<tbody>' + (body || '<tr><td colspan="6">' + T('No exceptions for this entity.') + '</td></tr>') + '</tbody>';
   }
 
   function ebitdaVar(ent) {
@@ -620,25 +883,25 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
   function renderEntVar() {
     var host = document.getElementById('entvar'); host.innerHTML = '';
     var ccName = state.cc ? D.meta.cost_centres.find(function (c) { return c[0] === state.cc; })[1] : '';
-    document.getElementById('ev-sub').textContent = (state.cc ? 'Operating costs of ' + ccName + ', Jan–Sep 2026' : periodName()) + ' · actual minus budget, thousands of euros · click an entity to filter the page';
+    document.getElementById('ev-sub').textContent = (state.cc ? I18N.p('Operating costs of ' + ccName + ', Jan–Sep 2026', 'Custos operacionais de ' + T(ccName) + ', jan–set 2026') : periodName()) + I18N.p(' · actual minus budget, thousands of euros · click an entity to filter the page', ' · real menos orçamento, milhares de euros · clique numa entidade para filtrar a página');
     var rows = D.meta.entities.map(function (e) { var s = ebitdaVar(e[0]); return { id: e[0], name: e[1], v: s.a - s.b, a: s.a, b: s.b }; });
     var W = 1040, rowH = 30, m = { t: 6, r: 70, b: 22, l: 210 }, H = m.t + m.b + rows.length * rowH;
     var maxAbs = Math.max.apply(null, rows.map(function (r) { return Math.abs(r.v); })) || 1;
     var mid = m.l + (W - m.l - m.r) / 2, X = function (v) { return mid + v / maxAbs * (W - m.l - m.r) / 2; };
-    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'EBITDA variance by entity' }, host);
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': T('EBITDA variance by entity') }, host);
     var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; host.appendChild(tip);
     el('line', { x1: mid, x2: mid, y1: m.t, y2: H - m.b, stroke: css('--muted') }, svg);
-    txt(svg, m.l, H - 6, 'adverse', {}); txt(svg, W - m.r, H - 6, 'favourable', { 'text-anchor': 'end' });
+    txt(svg, m.l, H - 6, T('adverse'), {}); txt(svg, W - m.r, H - 6, T('favourable'), { 'text-anchor': 'end' });
     rows.forEach(function (r, i) {
       var y = m.t + i * rowH, x0 = Math.min(X(0), X(r.v)), w = Math.max(1.5, Math.abs(X(r.v) - X(0)));
       var off = state.ent !== 'ALL' && state.ent !== r.id;
       txt(svg, m.l - 8, y + rowH / 2 + 4, r.name, { 'text-anchor': 'end', class: state.ent === r.id ? 'lbl' : '' });
       el('rect', { x: x0, y: y + 6, width: w, height: rowH - 12, rx: 2, fill: off ? css('--grid') : r.v >= 0 ? css('--good') : css('--warn') }, svg);
-      txt(svg, r.v >= 0 ? X(r.v) + 6 : X(r.v) - 6, y + rowH / 2 + 4, eurK(r.v) + 'k', { 'text-anchor': r.v >= 0 ? 'start' : 'end', class: 'lbl' });
+      txt(svg, r.v >= 0 ? X(r.v) + 6 : X(r.v) - 6, y + rowH / 2 + 4, eurK(r.v) + I18N.p('k', '\u00a0k€'), { 'text-anchor': r.v >= 0 ? 'start' : 'end', class: 'lbl' });
       var hit = el('rect', { x: 0, y: y, width: W, height: rowH, fill: 'transparent' }, svg);
-      hit.addEventListener('pointerenter', function () { var bb = svg.getBoundingClientRect(); tip.innerHTML = r.name + '<br>Actual ' + eurM(r.a) + ' · budget ' + eurM(r.b) + '<br>Variance ' + eurK(r.v) + 'k<br><i>Click to filter</i>'; tip.style.left = ((x0 + w / 2) / W * bb.width) + 'px'; tip.style.top = ((y + 6) / H * bb.height) + 'px'; tip.hidden = false; });
+      hit.addEventListener('pointerenter', function () { var bb = svg.getBoundingClientRect(); tip.innerHTML = r.name + '<br>' + T('Actual') + ' ' + eurM(r.a) + ' · ' + I18N.p('budget', 'orçamento') + ' ' + eurM(r.b) + '<br>' + T('Variance') + ' ' + eurK(r.v) + I18N.p('k', '\u00a0k€') + '<br><i>' + I18N.p('Click to filter', 'Clique para filtrar') + '</i>'; tip.style.left = ((x0 + w / 2) / W * bb.width) + 'px'; tip.style.top = ((y + 6) / H * bb.height) + 'px'; tip.hidden = false; });
       hit.addEventListener('pointerleave', function () { tip.hidden = true; });
-      clickable(hit, function () { tip.hidden = true; pickEnt(r.id); }, 'Filter by ' + r.name);
+      clickable(hit, function () { tip.hidden = true; pickEnt(r.id); }, I18N.p('Filter by ', 'Filtrar por ') + r.name);
     });
   }
   function syncButtons() {
@@ -651,13 +914,13 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
     var chips = [];
     if (state.ent !== 'ALL') chips.push(['ent', entName(state.ent)]);
     if (state.per.charAt(0) === 'M') chips.push(['per', periodName()]);
-    if (state.cc) chips.push(['cc', 'Cost centre: ' + D.meta.cost_centres.find(function (c) { return c[0] === state.cc; })[1]]);
+    if (state.cc) chips.push(['cc', I18N.p('Cost centre: ', 'Centro de custo: ') + T(D.meta.cost_centres.find(function (c) { return c[0] === state.cc; })[1])]);
     var box = document.getElementById('xf');
-    if (!chips.length) { box.innerHTML = '<span>Click an entity, a month (Jan–Sep 2026), a cost centre or a ledger exception to filter the page.</span>'; return; }
-    box.innerHTML = '<span>Selected:</span>' + chips.map(function (c) { return '<button data-x="' + c[0] + '" aria-label="Remove ' + c[1] + '">' + c[1] + ' ×</button>'; }).join('') +
-      (chips.length > 1 ? '<button data-x="all">Clear all</button>' : '') +
-      (state.per.charAt(0) === 'M' ? '<span>The bridge, product margin and cost centres stay Jan–Sep: the export has no monthly detail for them.</span>' : '') +
-      (state.cc ? '<span>The entity chart shows that cost centre\'s operating costs.</span>' : '');
+    if (!chips.length) { box.innerHTML = '<span>' + T('Click an entity, a month (Jan–Sep 2026), a cost centre or a ledger exception to filter the page.') + '</span>'; return; }
+    box.innerHTML = '<span>' + T('Selected:') + '</span>' + chips.map(function (c) { return '<button data-x="' + c[0] + '" aria-label="' + I18N.p('Remove ', 'Remover ') + c[1] + '">' + c[1] + ' ×</button>'; }).join('') +
+      (chips.length > 1 ? '<button data-x="all">' + T('Clear all') + '</button>' : '') +
+      (state.per.charAt(0) === 'M' ? '<span>' + T('The bridge, product margin and cost centres stay Jan–Sep: the export has no monthly detail for them.') + '</span>' : '') +
+      (state.cc ? '<span>' + T("The entity chart shows that cost centre's operating costs.") + '</span>' : '');
   }
   function render() { renderHeadline(); renderSelection(); renderEntVar(); renderKpis(); renderPnl(); renderBridge(); renderMonthly(); renderPvm(); renderCc(); renderFx(); renderChecks(); }
 
@@ -671,7 +934,7 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
   }
   document.getElementById('pnl-toggle').addEventListener('click', function () {
     state.accounts = !state.accounts; this.setAttribute('aria-expanded', String(state.accounts));
-    this.textContent = state.accounts ? 'Hide accounts' : 'Show accounts'; renderPnl();
+    this.textContent = T(state.accounts ? 'Hide accounts' : 'Show accounts'); renderPnl();
   });
 
   Promise.all(['pnl', 'bridge', 'pvm', 'opex', 'checks', 'meta'].map(function (n) { return fetch('data/' + n + '.json').then(function (r) { return r.json(); }); }))
@@ -680,6 +943,7 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
       D.acct = {}; D.meta.accounts.forEach(function (a) { D.acct[a[0]] = a; });
       var es = document.getElementById('ent-seg');
       es.innerHTML = '<button data-ent="ALL" aria-pressed="true">Group</button>' + D.meta.entities.map(function (e) { return '<button data-ent="' + e[0] + '" aria-pressed="false">' + e[2] + '</button>'; }).join('');
+      I18N.apply();
       seg('ent-seg', 'ent'); seg('per-seg', 'per');
       document.getElementById('xf').addEventListener('click', function (e) {
         var b = e.target.closest('button'); if (!b) return; var x = b.dataset.x;
@@ -701,6 +965,13 @@ dialog.line::backdrop { background: rgb(19 23 27 / .45); }
       var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(render, 150); });
       if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
     })
-    .catch(function (err) { console.error(err); document.getElementById('kpis').innerHTML = '<p>The data files did not load. Reload the page to try again.</p>'; });
+    .catch(function (err) { console.error(err); document.getElementById('kpis').innerHTML = '<p>' + T('The data files did not load. Reload the page to try again.') + '</p>'; });
+  I18N.on(function () {
+    document.getElementById('pnl-toggle').textContent = T(state.accounts ? 'Hide accounts' : 'Show accounts');
+    if (!D.meta) return;
+    render();
+    if (lastLine && document.getElementById('line').open) openLine(lastLine);
+  });
+  I18N.start();
 })();
 </script>
